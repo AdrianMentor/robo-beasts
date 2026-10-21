@@ -1237,7 +1237,7 @@ function liftFx(t,dur){t.liftY=0;const g=home(t);const sh=new T.Mesh(new T.Circl
 // ---------- SUPER: tri-form chain ----------
 let SUPER=null;const SUPN=['WOLF-STORM TRINITY','SKYFALL TRINITY','TITAN TRINITY','CRIMSON TEMPEST','MOON CRASH','DEATH BALL'],SIG=['pack','d_xclaw','thrash'];
 function setForm(a,f){HM[a.id][a.form].root.visible=false;a.form=f;const R=HM[a.id][f];R.root.visible=true;columnFx(home(a),parseInt(HEROES[a.id].col.slice(1),16));flashA=Math.max(flashA,0.35);SFX.morph();setFlash(R,1,0xddeeff);setTimeout(()=>setFlash(R,0),160);}
-function startSuper(a,s,targets){if(SINGLE(a.id))return castMove(a,SK[a.id===3?'n_super':a.id===5?'a_death_s':a.id===6?'d_gatling':a.id===7?'k_cuts':'b_moon_s'],targets);SUPER={a,orig:a.form,stage:0,go:1,tg:targets[0]};B.banner={n:SUPN[a.id],t:0,big:1};superNext();}
+function startSuper(a,s,targets){if(SINGLE(a.id))return castMove(a,SK[a.id===3?'n_super':a.id===5?'a_death_s':a.id===6?((B&&B.titanUsed)?'d_gatling':'d_titan'):a.id===7?'k_cuts':'b_moon_s'],targets);SUPER={a,orig:a.form,stage:0,go:1,tg:targets[0]};B.banner={n:SUPN[a.id],t:0,big:1};superNext();}
 function superNext(){const S0=SUPER,a=S0.a;const tg=()=>{const t=S0.tg&&S0.tg.hp>0?S0.tg:alive(B.en)[0];S0.tg=t;return t?[t]:[];};
  if(alive(B.en).length===0||a.hp<=0||S0.stage>=3){setTimeout(()=>{if(a.form!==S0.orig)setForm(a,S0.orig);SUPER=null;log(`${a.name} completes ${SUPN[a.id]}!`);endTurn();},500);return;}
  const st=S0.stage++;busy=true;
@@ -2978,6 +2978,130 @@ function showChat(){chatTimers.forEach(clearTimeout);chatTimers=[];const ch=pick
  chatTimers.push(setTimeout(()=>run(0),t));}
 window.showHubChat=showChat;
 const _bh=bridgeHub;bridgeHub=function(){const r=_bh.apply(this,arguments);try{showChat();}catch(e){console.warn('chat',e);}return r;};
+})();
+</script>
+<script>
+// ===== DUKE's special: STARGUARD TITAN (original mech design) =====
+(function(){
+SPK.TITAN={n:'STARGUARD TITAN',i:'🛡️',c:'#ffc060'};
+try{if(window.VOICE_PROF)VOICE_PROF.TITAN=['m',2,0.7,0.88];}catch(_){}
+SK.d_titan={n:'Titan',t:'beam',p:2.4,p2:3.0,en:120,form:'human',hero:6,cast:'d_titan',once:1};
+// once per battle: hide from Duke's list after use
+const _sf=skillsFor;skillsFor=function(id,form){const r=_sf.apply(this,arguments);return (B&&B.titanUsed)?r.filter(k=>k!=='d_titan'):r;};
+// --- model: silver-white + deep teal armor, gold trim, amber visor slit, swept-back twin crest, back thruster pack + energy wings, shoulder shield
+function mkTitan(){const g=new THR.Group();const W=TM(0xdde3ea),TL=TM(0x0f5a5e),GD=TM(0xd8a838),DK=TM(0x2a3038);
+ const bx=(w,h,d,m,x,y,z,p=g)=>{const o=new THR.Mesh(new THR.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;p.add(o);return o;};
+ const P=(x,y,z,p=g)=>{const q=new THR.Group();q.position.set(x,y,z);p.add(q);return q;};
+ const hip=P(0,4.2,0);bx(1.6,0.7,1.1,DK,0,0,0,hip);bx(1.7,0.15,1.15,GD,0,0.38,0,hip);
+ const legs=[-1,1].map(s=>{const L=P(0,-0.2,s*0.55,hip);bx(0.75,2.0,0.75,W,0,-1.1,0,L);bx(0.8,0.5,0.8,TL,0,-0.2,0,L);const K=P(0,-2.1,0,L);bx(0.85,0.6,0.85,TL,0.08,0,0,K);bx(0.72,1.9,0.72,W,0,-1.1,0,K);bx(0.2,1.3,0.74,GD,0.38,-1.0,0,K);bx(1.3,0.45,0.9,DK,0.25,-2.1,0,K);return {L,K};});
+ const ch=P(0,1.6,0,hip);bx(1.5,1.8,2.0,W,0,0.2,0,ch);bx(1.55,0.9,1.4,TL,0.1,0.55,0,ch);bx(0.06,0.5,1.5,GD,0.88,0.55,0,ch);bx(1.0,0.5,1.6,DK,0,-0.9,0,ch);
+ // head: rounded helmet, single amber visor slit, swept-back twin crest
+ const hd=P(0.1,1.45,0,ch);bx(0.8,0.75,0.75,W,0,0,0,hd);bx(0.85,0.2,0.8,TL,0,0.38,0,hd);const vis=new THR.Mesh(new THR.BoxGeometry(0.06,0.11,0.62),new THR.MeshBasicMaterial({color:0x332000}));vis.position.set(0.42,0.05,0);hd.add(vis);
+ [-1,1].forEach(s=>{const c=P(0.1,0.42,s*0.22,hd);const a=bx(0.08,0.08,1.1,GD,-0.45,0.12,0,c);a.rotation.y=PI/2;a.rotation.x=0;c.rotation.z=0.35;c.rotation.x=s*0.12;});
+ bx(0.4,0.2,0.3,DK,0.2,-0.45,0,hd);
+ // arms
+ const arm=s=>{const S=P(0,0.6,s*1.35,ch);bx(0.9,0.9,0.9,TL,0,0,0,S);const U=P(0,-0.4,0,S);bx(0.6,1.4,0.6,W,0,-0.7,0,U);const E=P(0,-1.45,0,U);bx(0.68,1.3,0.68,W,0,-0.65,0,E);bx(0.7,0.25,0.7,GD,0,-0.2,0,E);const H=P(0,-1.45,0,E);bx(0.45,0.45,0.45,DK,0,0,0,H);return {S,U,E,H};};
+ const AR=arm(1),AL=arm(-1);
+ // shoulder shield (left) + shoulder beam rifle (right)
+ const sh=bx(0.25,2.4,1.5,TL,0.3,-0.9,-0.5,AL.U);bx(0.27,2.2,0.12,GD,0.31,-0.9,-0.5,AL.U);sh.rotation.x=0;
+ const rif=P(0,0.7,0.2,AR.S);bx(2.4,0.32,0.32,DK,0.6,0,0,rif);bx(0.6,0.45,0.45,W,-0.3,0,0,rif);const muz=P(1.85,0,0,rif);
+ // back thruster pack + energy wings
+ const bp=P(-1.15,0.3,0,ch);bx(0.7,1.6,1.6,DK,0,0,0,bp);const fl=[];[-0.45,0.45].forEach(z=>{bx(0.5,0.5,0.5,TL,-0.4,-0.9,z,bp);const f=celSprite(flameTex(0x60c0ff,0),0.9,1.8,0.1);f.position.set(-0.4,-1.7,z);bp.add(f);fl.push(f);});
+ const wings=[];[-1,1].forEach(s=>{const wg=new THR.Mesh(new THR.PlaneGeometry(3.6,1.1),new THR.MeshBasicMaterial({color:0x40e8ff,transparent:true,opacity:0.55,side:THR.DoubleSide,depthWrite:false,blending:THR.AdditiveBlending}));wg.position.set(-0.3,0.5,s*1.9);wg.rotation.set(s*0.5,0,s*-0.4);bp.add(wg);wings.push(wg);});
+ // energy saber (hidden until drawn)
+ const sab=new THR.Group();AR.H.add(sab);bx(0.2,0.5,0.2,GD,0,0,0,sab);const blade=new THR.Mesh(new THR.CylinderGeometry(0.13,0.13,5.2,10),new THR.MeshBasicMaterial({color:0xffe0a0}));blade.position.y=-2.8;sab.add(blade);const glow=new THR.Mesh(new THR.CylinderGeometry(0.32,0.32,5.4,10),new THR.MeshBasicMaterial({color:0xff9a30,transparent:true,opacity:0.45,blending:THR.AdditiveBlending,depthWrite:false}));glow.position.y=-2.8;sab.add(glow);sab.visible=false;
+ // LEFT forearm beam gatling (multi-barrel, bigger than Duke's)
+ const gat=P(0.35,-0.7,0,AL.E);bx(0.9,0.8,0.8,DK,0,0,0,gat);const grot=P(0.5,0,0,gat);const gtips=[];for(let k=0;k<6;k++){const an=k/6*PI*2;const b=new THR.Mesh(new THR.CylinderGeometry(0.09,0.09,2.2,8),TM(0x8890a0));b.rotation.z=PI/2;b.position.set(1.1,Math.cos(an)*0.26,Math.sin(an)*0.26);grot.add(b);const tp=P(2.2,Math.cos(an)*0.26,Math.sin(an)*0.26,grot);gtips.push(tp);}
+ [0.3,1.2,2.0].forEach(x=>{const rg=new THR.Mesh(new THR.TorusGeometry(0.34,0.05,6,16),GD);rg.rotation.y=PI/2;rg.position.x=x;grot.add(rg);});gat.visible=false;
+ // head vulcans
+ const vul=[-1,1].map(s=>P(0.42,0.22,s*0.3,hd));vul.forEach(v=>bx(0.12,0.1,0.1,GD,0,0,0,v));
+ g.userData={hip,legs,ch,hd,vis,AR,AL,rif,muz,fl,wings,sab,gat,grot,gtips,vul};return g;}
+window.mkStarTitan=mkTitan;
+function beep(f,d=0.08,v=0.08){try{const ac=getAC();if(!ac||muted)return;const o=ac.createOscillator(),g=ac.createGain(),t0=ac.currentTime;o.type='square';o.frequency.value=f;g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(0.0001,t0+d);o.connect(g);g.connect(ac.destination);o.start(t0);o.stop(t0+d+0.02);}catch(_){}}
+function mkSat(){const g=new THR.Group();const body=new THR.Mesh(new THR.CylinderGeometry(1.2,1.2,3,8),TM(0xd8dde4));body.rotation.z=PI/2;g.add(body);const band=new THR.Mesh(new THR.CylinderGeometry(1.25,1.25,0.5,8),TM(0x0f5a5e));band.rotation.z=PI/2;g.add(band);
+ [-1,1].forEach(s=>{const pn=new THR.Mesh(new THR.BoxGeometry(0.1,1.8,5),new THR.MeshToonMaterial({color:0x2050a0}));pn.position.set(0,0,s*4.2);g.add(pn);const fr=new THR.Mesh(new THR.BoxGeometry(0.14,1.9,0.15),TM(0xd8a838));fr.position.set(0,0,s*1.7);g.add(fr);});
+ const dish=new THR.Mesh(new THR.ConeGeometry(1.0,0.8,16,1,true),new THR.MeshToonMaterial({color:0xeeeeee,side:THR.DoubleSide}));dish.position.set(0,-1.6,0);dish.rotation.x=PI;g.add(dish);const eye=celSprite(orbTex(0xff4040),0.9,0.9);eye.position.set(0,-2.1,0);g.add(eye);g.userData={eye};return g;}
+CAST.d_titan=function(a,ts,s,T){const C=cineStart();C.objs=[];B.titanUsed=1;window.__titan={ph:'call',hits:0};a.anim={st:'palm',t:0,dur:1.2,melee:false};B.banner={n:'STARGUARD TITAN!',t:0,big:1};
+ const tgt=ts[0];const foes=alive(B.en);const ec=new V3();foes.forEach(e=>ec.add(home(e)));ec.multiplyScalar(1/Math.max(1,foes.length));const hb=home(a);
+ const fwd=ec.clone().sub(hb).setY(0).normalize();const side=new V3(-fwd.z,0,fwd.x);if(side.z<0)side.negate();
+ const land=hb.clone().addScaledVector(fwd,0.5).addScaledVector(side,-3.0).setY(0);const M=mkTitan();const U=M.userData;const yaw0=Math.atan2(-fwd.z,fwd.x);M.rotation.y=yaw0;M.position.copy(land).add(new V3(-fwd.x*30,60,-fwd.z*30));M.visible=false;scene.add(M);C.objs.push(M);
+ const sat=mkSat();const SP=new V3(hb.x,420,hb.z-40);sat.position.copy(SP);scene.add(sat);C.objs.push(sat);
+ const dome=new THR.Mesh(new THR.SphereGeometry(1,24,16),new THR.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,depthWrite:false,fog:false}));dome.visible=false;scene.add(dome);C.objs.push(dome);
+ const ret=celSprite(ringTex(0xff2020),6,6);ret.visible=false;ret.material.depthTest=false;ret.renderOrder=30;scene.add(ret);C.objs.push(ret);
+ const wh=new THR.Mesh(new THR.ConeGeometry(0.5,2.2,10),TM(0xd8a838));wh.visible=false;scene.add(wh);C.objs.push(wh);
+ const hid=S.party.filter(u=>u!==a).map(u=>{const r=model(u).root;const v=r.visible;r.visible=false;return [r,v];});let hon=1;addFx({life:20,max:20,up:()=>{if(hon)hid.forEach(([r])=>r.visible=false);}});C.cleanup=()=>{hon=0;hid.forEach(([r,v])=>r.visible=v);};
+ const asp=()=>Math.max(0.35,Math.min(2.2,cam.aspect||1.5));const far=k=>k/Math.min(1,asp()*0.85);
+ const RE0=1.0,RE1=2.9,VU0=3.8,SA0=5.2,GA0=7.0,GF0=7.6,OR0=9.2,SPC0=9.7,SPC1=10.6,DROP=11.4,BOOM=11.9,MU0=12.6,MU1=15.2,DEP=15.4,END=16.7;
+ let landed=0,dep=0,gspin=0,boomed=0;
+ // ---- mushroom cloud (kid-friendly cartoon fireball cloud) ----
+ const MC={on:0,h:0,stem:[],cap:[],ring:null};
+ const mkPuff=(c,sz)=>{const p=celSprite(orbTex(c),sz,sz);p.material.fog=false;p.material.depthWrite=false;scene.add(p);C.objs.push(p);return p;};
+ const mkMush=()=>{for(let k=0;k<22;k++){const p=mkPuff(0xff8030,3.2);p.userData={k:k/22,sz:2.6+Math.random()*1.4,ph:Math.random()*6};MC.stem.push(p);}
+  for(let k=0;k<48;k++){const p=mkPuff(0xffa040,5);p.userData={a:k/48*PI*2+Math.random()*0.2,b:Math.random()*PI*2,sz:4.5+Math.random()*3,r2:1.6+Math.random()*1.4};MC.cap.push(p);}
+  const core=mkPuff(0xfff0b0,10);core.userData={core:1};MC.core=core;
+  const rg=new THR.Mesh(new THR.RingGeometry(0.8,1.2,48),new THR.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.7,side:THR.DoubleSide,depthWrite:false,fog:false}));rg.rotation.x=-PI/2;scene.add(rg);C.objs.push(rg);MC.ring=rg;
+  try{bhSfx('rumble');}catch(_){}};
+ const updMush=(e,dt)=>{const t=e-MU0,life=MU1-MU0;const rise=Math.min(1,t/1.4),H=6+rise*24;MC.h=H;const fade=e<MU1-0.6?1:Math.max(0,(MU1-e)/0.6);const cool=Math.min(1,t/1.8);
+  const col=(o,k)=>{const r=1-0.62*k,g=0.55-0.17*k+0.0,b=0.2+0.18*k;o.material.color.setRGB(r,Math.max(0.3,g),b);};
+  MC.stem.forEach(p=>{const u=p.userData;p.position.copy(ec).add(new V3(Math.sin(u.ph+e*2)*0.4,u.k*H*0.85,Math.cos(u.ph+e*2)*0.4));p.scale.setScalar(u.sz*(1.0+0.6*u.k));col(p,cool*(0.5+0.5*u.k));p.material.opacity=0.85*fade;});
+  const R=4+rise*6,cy=H;MC.cap.forEach(p=>{const u=p.userData;u.b+=dt*1.6;const rr=R+Math.cos(u.b)*u.r2*(1+rise),yy=cy+Math.sin(u.b)*u.r2*(1+rise)*0.7;p.position.copy(ec).add(new V3(Math.cos(u.a+e*0.15)*rr,yy,Math.sin(u.a+e*0.15)*rr));p.scale.setScalar(u.sz*(0.6+0.7*rise));col(p,cool*(0.35+0.65*(0.5+0.5*Math.sin(u.b))));p.material.opacity=0.9*fade;});
+  MC.core.position.copy(ec).add(new V3(0,cy,0));MC.core.scale.setScalar(R*1.8);MC.core.material.opacity=(0.85-0.5*cool)*fade;MC.core.material.color.setRGB(1,0.85-0.3*cool,0.45-0.2*cool);
+  MC.ring.position.copy(ec).setY(H*0.45);MC.ring.scale.setScalar(2+t*5);MC.ring.material.opacity=Math.max(0,0.7-t*0.35)*fade;
+  if(Math.random()<0.15)CAM.shake=Math.max(CAM.shake,0.25);
+  if(e>MU1-0.05){MC.stem.concat(MC.cap,[MC.core]).forEach(p=>p.visible=false);MC.ring.visible=false;}};
+ const drv=addFx({life:1e9,max:1e9,up:(f,dt)=>{if(window.__titan.ph==='done')return;const e=T.el();window.__titan.el=e;const tp=home(tgt),tc=center(tgt);
+  sat.rotation.y+=dt*0.6;sat.rotation.x=0.3*Math.sin(e);
+  if(e<RE0){camLook(hb.clone().addScaledVector(fwd,2.4).addScaledVector(side,1.6).add(new V3(0,0.5,0)),center(a).add(new V3(0,0.6,0)),8);}
+  else if(e<RE1){window.__titan.ph='reentry';M.visible=true;const q=(e-RE0)/(RE1-RE0);const k=1-(1-q)*(1-q);M.position.copy(land).add(new V3(-fwd.x*30*(1-k),60*(1-k),-fwd.z*30*(1-k)));
+   if(Math.random()<0.9){const fb=celSprite(flameTex(Math.random()<0.5?0xff6020:0xffc040,Math.floor(Math.random()*3)),3,4,0.1);fb.position.copy(M.position).add(new V3((Math.random()-0.5)*2,4+Math.random()*4,(Math.random()-0.5)*2));scene.add(fb);addFx({mesh:fb,life:0.5,max:0.5,up:g2=>{fb.material.opacity=g2.life/g2.max;fb.position.y+=0.15;}});}
+   camLook(land.clone().addScaledVector(side,far(16)).add(new V3(0,1.5,0)),M.position.clone().add(new V3(0,5,0)),4);}
+  if(e>=RE1&&!landed){landed=1;window.__titan.ph='land';M.position.copy(land);CAM.shake=1.6;flashA=0.5;debris(land,30,0x6a5a48,10);dust(land,26,0x9a8466,2.0);shockRing(land.clone().setY(0.1),14,0xffd080,0.8);try{SFX2.explosion(true);bhSfx('rumble');}catch(_){}}
+  if(e>=RE1){const vq=Math.min(1,Math.max(0,(e-3.1)/0.3));const vo=e>=OR0&&e<SPC0?1.5:1;U.vis.material.color.setRGB(Math.min(1,(0.2+0.8*vq)*vo),Math.min(1,(0.12+0.55*vq)*vo),0.02+0.1*vq);U.wings.forEach(w=>w.material.opacity=0.25+0.4*vq);}
+  const face=p=>{M.rotation.y+=(Math.atan2(-(p.z-M.position.z),p.x-M.position.x)-M.rotation.y)*Math.min(1,dt*6);};
+  if(e>=RE1&&e<VU0){camLook(land.clone().addScaledVector(fwd,far(8)).addScaledVector(side,far(14)).add(new V3(0,2.0,0)),land.clone().add(new V3(0,4.3,0)),8);}
+  // (1) head vulcans
+  else if(e>=VU0&&e<SA0){window.__titan.ph='vulcan';face(tp);if(Math.random()<0.7){const v=U.vul[Math.random()<0.5?0:1].getWorldPosition(new V3());boltFx(v,tc.clone().add(new V3((Math.random()-0.5)*0.8,(Math.random()-0.5)*0.8,(Math.random()-0.5)*0.8)),0xffe080,0.05,0.06,3);if(Math.random()<0.4)sparks(tc,0xffe080,3,4);}
+   const hd=U.hd.getWorldPosition(new V3());const mv=hd.clone().lerp(tc,0.5);camLook(mv.clone().addScaledVector(side,far(13)).addScaledVector(fwd,-2).add(new V3(0,1.5,0)),mv,8);}
+  // (2) beam saber
+  else if(e>=SA0&&e<GA0){window.__titan.ph='saber';U.sab.visible=true;const q=Math.min(1,(e-SA0)/1.0);const to=tp.clone().addScaledVector(fwd,-3.2);M.position.lerpVectors(land,to,Math.min(1,q*1.4));face(tp);
+   U.AR.S.rotation.z=e<SA0+0.8?2.6*Math.min(1,(e-SA0)/0.8):2.6-4.2*Math.min(1,(e-SA0-0.8)/0.3);U.AR.E.rotation.z=0.4;
+   const mid=M.position.clone().lerp(tp,0.5);camLook(mid.clone().addScaledVector(side,far(20)).add(new V3(0,4.5,0)),mid.clone().add(new V3(0,4.0,0)),8);}
+  // (3) left-arm beam gatling
+  else if(e>=GA0&&e<OR0){window.__titan.ph='gatling';U.sab.visible=false;U.gat.visible=true;U.AR.S.rotation.z=0;M.position.lerp(land,0.06);face(tp);U.AL.S.rotation.z=1.5;U.AL.E.rotation.z=0.05;
+   gspin=Math.min(35,gspin+dt*30);U.grot.rotation.x+=gspin*dt;
+   if(e>=GF0){CAM.shake=Math.max(CAM.shake,0.35);for(let q=0;q<2;q++){const p0=U.gtips[Math.floor(Math.random()*6)].getWorldPosition(new V3());boltFx(p0,tc.clone().add(new V3((Math.random()-0.5)*0.8,(Math.random()-0.5)*0.8,(Math.random()-0.5)*0.8)),Math.random()<0.5?0x40e0ff:0xffe080,0.12,0.08,3);}if(Math.random()<0.5)sparks(tc,0x9ff8ff,5,6);}
+   const gp=U.gat.getWorldPosition(new V3());const m=gp.clone().lerp(tc,0.5);camLook(m.clone().addScaledVector(side,far(13)).add(new V3(0,2.5,0)),m.clone().add(new V3(0,1.2,0)),5);}
+  // (4) orbital strike
+  else if(e>=OR0&&e<SPC0){window.__titan.ph='uplink';U.gat.visible=false;U.AL.S.rotation.z=0;U.AR.S.rotation.z=Math.min(3.0,(e-OR0)*7);const hd=U.hd.getWorldPosition(new V3());camLook(hd.clone().addScaledVector(fwd,4).addScaledVector(side,far(3)).add(new V3(0,-1.5,0)),hd,6);}
+  else if(e>=SPC0&&e<SPC1){window.__titan.ph='sat';camLook(SP.clone().add(new V3(9,3,12)),SP,30);sat.userData.eye.scale.setScalar(0.9+0.5*Math.sin(e*20));}
+  else if(e>=SPC1&&e<BOOM){window.__titan.ph=e<DROP?'lock':'drop';ret.visible=true;const q=Math.min(1,(e-SPC1)/0.7);ret.position.copy(tc);ret.scale.setScalar(9-6*q);ret.material.rotation+=dt*(3-2*q);
+   camLook(ec.clone().addScaledVector(side,far(16)).add(new V3(0,5,0)),ec.clone().add(new V3(0,1.5,0)),6);
+   if(e>=DROP){wh.visible=true;const k=Math.min(1,(e-DROP)/(BOOM-DROP));wh.position.copy(ec).setY(60*(1-k)+0.5);wh.rotation.x=PI;const tr=celSprite(orbTex(0xffe0a0),1.2,1.2);tr.position.copy(wh.position).add(new V3(0,1.5,0));scene.add(tr);addFx({mesh:tr,life:0.4,max:0.4,up:g2=>{tr.material.opacity=g2.life/g2.max;}});}}
+  if(e>=MU0&&!MC.on){MC.on=1;mkMush();}
+  if(MC.on&&e<DEP)updMush(e,dt);
+  if(e>=MU0&&e<DEP){window.__titan.ph='mushroom';dome.visible=false;const top=MC.h+6;camLook(ec.clone().addScaledVector(side,far(78)).add(new V3(0,4,0)),ec.clone().add(new V3(0,top*0.55,0)),4);}
+  else if(e>=BOOM&&e<DEP){window.__titan.ph='boom';ret.visible=false;wh.visible=false;if(!boomed){boomed=1;flashA=1;HSTOP=0.15;CAM.shake=2.2;dome.visible=true;dome.position.copy(ec);try{SFX2.explosion(true);bhSfx('rumble');bhSfx('rumble');}catch(_){}
+     for(let k=0;k<8;k++)setTimeout(()=>{try{fireBlast(ec.clone().add(new V3((Math.random()-0.5)*6,Math.random()*3,(Math.random()-0.5)*6)),2.5);}catch(_){}},k*90);shockRing(ec.clone().setY(0.1),26,0xffffff,1.0);debris(ec,40,0x6a5a48,14);}
+   const q=Math.min(1,(e-BOOM)/0.9);dome.scale.setScalar(1+q*12);dome.material.opacity=0.9*(1-q);dome.material.color.setRGB(1,1-0.5*q,1-0.9*q);if(e>BOOM+0.6&&Math.random()<0.5)dust(ec.clone().add(new V3((Math.random()-0.5)*8,0,(Math.random()-0.5)*8)),3,0x9a8466,2.0);
+   camLook(ec.clone().addScaledVector(side,far(22)).add(new V3(0,7,0)),ec.clone().add(new V3(0,3,0)),4);}
+  else if(e>=DEP){window.__titan.ph='depart';dome.visible=false;dep+=dt;M.position.y+=dt*(6+dep*30);U.fl.forEach(fl=>fl.scale.set(1.6,3+Math.random(),1));camLook(land.clone().addScaledVector(side,far(16)).add(new V3(0,2,0)),M.position.clone().add(new V3(0,4,0)),4);}
+  U.fl.forEach(fl=>{fl.material.opacity=0.6+0.4*Math.random();});}});
+ T.at(0.2,()=>{beep(880,0.06);beep(1320,0.06);try{(window.speak||(()=>null))(6,'Titan, this is Duke. Need a big hand down here, partner!');}catch(_){}const fl=celSprite(orbTex(0xffc060),0.8,0.8);fl.position.copy(center(a));scene.add(fl);addFx({mesh:fl,life:0.9,max:0.9,up:(g2,dt)=>{fl.position.y+=dt*25;}});});
+ T.at(RE0,()=>{try{bhSfx('rumble');whine(1.6);}catch(_){}});
+ T.at(3.2,()=>{try{(window.speak||(()=>null))('TITAN','Starguard Titan online. Protecting the team.');SFX2.charge();}catch(_){}});
+ for(let k=0;k<6;k++)T.at(VU0+0.15+k*0.2,()=>{try{SFX2.zap();}catch(_){}leoHit(a,tgt,s.p*0.06,'Titan Vulcans',{sc:0xffe080,ic:0xffc040});window.__titan.hits++;});
+ T.at(SA0+0.05,()=>{try{SFX2.zap();}catch(_){}});
+ T.at(SA0+0.95,()=>{const c=center(tgt);const arc=celSprite(ringTex(0xffb040),9,9);arc.position.copy(c);scene.add(arc);addFx({mesh:arc,life:0.4,max:0.4,up:f=>{arc.material.rotation+=0.3;arc.material.opacity=f.life/f.max;arc.scale.multiplyScalar(1.04);}});
+  CAM.shake=1.4;flashA=0.6;HSTOP=0.12;sparks(c,0xffc060,40,10);shockRing(home(tgt).clone().setY(0.1),9,0xffd080,0.6);try{SFX2.slash();SFX2.explosion(true);}catch(_){}leoHit(a,tgt,s.p*0.4,'Titan Saber',{t:'sword',sc:0xffe0a0,ic:0xff9a30});window.__titan.hits++;});
+ T.at(GA0,()=>whine(0.6));
+ for(let k=0;k<12;k++)T.at(GF0+k*0.13,()=>{if(k%2===0){try{SFX2.gatling();}catch(_){}}leoHit(a,tgt,s.p*0.5/12,'Titan Gatling',{sc:0x9ff8ff,ic:0x40e0ff});window.__titan.hits++;});
+ T.at(OR0+0.1,()=>{beep(660,0.1);beep(990,0.1);try{(window.speak||(()=>null))('TITAN','Uplink to Starfall satellite. Target locked.');}catch(_){}});
+ for(let k=0;k<6;k++)T.at(SPC1+k*0.13,()=>beep(1200+k*120,0.05,0.1));
+ T.at(DROP,()=>{try{SFX2.missileLaunch();}catch(_){}});
+ T.at(BOOM+0.05,()=>{alive(B.en).forEach(t=>{leoHit(a,t,s.p2,'Starfall Warhead',{sc:0xffffff,ic:0xffc060});window.__titan.hits++;});});
+ T.at(MU0+0.1,()=>{try{bhSfx('rumble');SFX2.explosion(true);}catch(_){}});T.at(MU0+1.2,()=>{try{bhSfx('rumble');}catch(_){}});
+ T.at(DEP,()=>{try{SFX2.missileLaunch();bhSfx('rumble');}catch(_){}});
+ T.at(END,()=>{drv.life=0;window.__titan.ph='done';cineEnd();});return END+0.1;};
 })();
 </script>
 <script>if("serviceWorker" in navigator&&location.protocol!=="file:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script></body></html>
