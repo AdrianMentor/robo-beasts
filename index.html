@@ -2459,7 +2459,9 @@ function skinsScreen(back){const e=EXd();openEx(`SKINS · ${S.coins||0} ◉`,`<d
 // ---------- EXTRAS MENU (hub/map) ----------
 function settingsTxt(){const e=EXd();return `Easy Mode <small>${e.easy?'ON · enemies −50% HP/ATK':'OFF'}</small>`;}
 function extrasMenu(back){const e=EXd();menu([{l:`🎁 Daily Chest <small>${e.daily===today()?'opened · '+untilMidnight():'READY!'}</small>`,f:()=>dailyChest(()=>extrasMenu(back))},{l:`🐾 Pets <small>${e.pets.length}/${PETS.length}${e.pet?' · '+PETS.find(p=>p.k===e.pet).n:''}</small>`,f:()=>petsScreen(()=>extrasMenu(back))},{l:'🎨 Skins',f:()=>skinsScreen(()=>extrasMenu(back))},{l:`🏅 Badges & Stars <small>${Object.keys(e.badges).length}/${BADGES.length}</small>`,f:()=>badgesScreen(()=>extrasMenu(back))},
- {l:'⚙ '+settingsTxt(),f:()=>{e.easy=e.easy?0:1;save();toast(e.easy?'Easy Mode ON':'Easy Mode OFF');extrasMenu(back);}}],back,'EXTRAS');}
+ {l:'⚙ '+settingsTxt(),f:()=>{e.easy=e.easy?0:1;save();toast(e.easy?'Easy Mode ON':'Easy Mode OFF');extrasMenu(back);}},
+ {l:`🗣 Voices <small>${window.voiceCfg&&voiceCfg().on?'ON':'OFF'}</small>`,f:()=>{const v=voiceCfg();voiceSet('on',v.on?0:1);if(v.on)voiceCancel();else voiceSpeak('VESTA','Voices on.');extrasMenu(back);}},
+ {l:`🔊 Voice volume <small>${window.voiceCfg?Math.round(voiceCfg().vol*100):100}%</small>`,f:()=>{const v=voiceCfg();const nv=[0.25,0.5,0.75,1][([0.25,0.5,0.75,1].indexOf(v.vol)+1)%4];voiceSet('vol',nv);voiceSpeak('VESTA','Volume '+Math.round(nv*100)+' percent.');extrasMenu(back);}}],back,'EXTRAS');}
 window.extrasMenu=extrasMenu;window.dailyChest=dailyChest;window.petsScreen=petsScreen;window.skinsScreen=skinsScreen;window.badgesScreen=badgesScreen;
 function addExtras(back){if(!M||!S)return;const e=EXd();const it=[{l:`🎁 Daily Chest <small>${e.daily===today()?'opened':'READY!'}</small>`,f:()=>dailyChest(back)},{l:'★ Extras <small>pets · skins · badges · easy</small>',f:()=>extrasMenu(back)}];M.items.splice(1,0,...it);drawMenu();}
 const _hub=bridgeHub;bridgeHub=function(){const r=_hub.apply(this,arguments);try{addExtras(bridgeHub);}catch(e){console.warn(e)}return r;};
@@ -2493,6 +2495,50 @@ window.autoAct=autoAct;
 const _cmd=commands;commands=function(h){const r=_cmd.apply(this,arguments);if(AUTO)setTimeout(()=>autoAct(h),450);return r;};
 setInterval(()=>{try{if(AUTO&&B&&sceneN==='battle'&&B.cur&&!B.cur.enemy&&!busy&&!B.tmenu_auto&&!(typeof CI!=='undefined'&&CI))autoAct(B.cur);}catch(_){}},700);
 setInterval(()=>{try{autoBtn.style.display=(sceneN==='battle'&&B)?'block':'none';}catch(_){}},500);
+})();
+
+</script>
+<script>
+// ===== VOICES: Web Speech API (system voices only, nothing recorded) =====
+(function(){
+const SS=('speechSynthesis' in window)?window.speechSynthesis:null,UT=window.SpeechSynthesisUtterance;
+const cfg=()=>{const e=(S&&S.ex)||null;let g={};try{g=JSON.parse(localStorage.getItem('sfd_voice')||'{}');}catch(_){}const v=Object.assign({on:1,vol:1},g,e&&e.voice||{});return v;};
+function setCfg(k,val){const v=cfg();v[k]=val;try{localStorage.setItem('sfd_voice',JSON.stringify(v));}catch(_){}if(S){S.ex=S.ex||{};S.ex.voice=v;try{save();}catch(_){}}}
+window.voiceCfg=cfg;window.voiceSet=setCfg;
+let VO=[];const F=/female|samantha|karen|victoria|moira|tessa|fiona|zira|susan|serena|allison|ava|kate|joanna|salli|kimberly|amy|emma|nicky|libby|sonia|aria|jenny|google us english$|google uk english female/i,Mm=/\bmale\b|daniel|alex|fred|tom\b|aaron|arthur|rishi|david|mark|guy|ryan|oliver|thomas|george|lee|gordon|google uk english male/i;
+function loadVoices(){if(!SS)return;try{VO=SS.getVoices()||[];}catch(_){VO=[];}}
+if(SS){loadVoices();try{SS.addEventListener?SS.addEventListener('voiceschanged',loadVoices):(SS.onvoiceschanged=loadVoices);}catch(_){}}
+function pick(g,n){const en=VO.filter(v=>/^en[-_](US|GB)/i.test(v.lang)),pool=en.length?en:VO.filter(v=>/^en/i.test(v.lang));if(!pool.length)return null;
+ const fem=pool.filter(v=>F.test(v.name)&&!/\bmale\b/i.test(v.name)),mal=pool.filter(v=>Mm.test(v.name)&&!F.test(v.name));const L=g==='f'?(fem.length?fem:pool):g==='m'?(mal.length?mal:pool):pool;return L[(n||0)%L.length];}
+// speaker profiles: gender pref, voice index (variety), pitch, rate
+const PROF={0:['f',0,1.15,1.05],1:['f',1,1.32,1.1],2:['m',0,0.85,1.0],3:['f',2,1.0,0.95],4:['f',0,2.0,1.15],5:['m',1,0.55,0.8],
+ ORIN:['m',2,0.75,0.88],SERA:['f',3,0.92,0.96],JUNO:['f',4,1.12,1.08],VESTA:['f',5,1.0,0.9],NAR:['m',3,0.95,0.94],LOCAL:['x',0,1.5,1.12],ENEMY:['m',0,0.4,0.85]};
+window.VOICE_PROF=PROF;
+const BABBLE=['Goo!','Waaah!','Hee hee hee!','Ba-ba!','Goo goo ga!','Wheee!','Mama!','Ahh-boo!'];
+function clean(t){return String(t||'').replace(/\*[^*]*\*/g,' ').replace(/\[[^\]]*\]|\([^)]*\)/g,' ').replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu,'').replace(/[★☆◉▶◀✦⚡✔✕→←↓↑↘·•…~_#<>{}|\\^]/g,' ').replace(/\.{2,}/g,'. ').replace(/\s+/g,' ').trim();}
+window.voiceClean=clean;
+let ducked=0;
+function duck(on){if(on===!!ducked)return;ducked=on?1:0;try{musDuck(on);}catch(_){}}
+function cancel(){if(!SS)return;try{SS.cancel();}catch(_){}duck(false);}
+window.voiceCancel=cancel;
+function speak(who,text){if(!SS||!UT)return null;const c=cfg();if(!c.on||muted||c.vol<=0){return null;}
+ let t=who===4?BABBLE[Math.floor(Math.random()*BABBLE.length)]+(Math.random()<0.5?' '+BABBLE[Math.floor(Math.random()*BABBLE.length)]:''):clean(text);if(!t)return null;
+ const p=PROF[who]||PROF.NAR;try{SS.cancel();}catch(_){}if(!VO.length)loadVoices();
+ const u=new UT(t);const v=pick(p[0],p[1]);if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-US';u.pitch=p[2];u.rate=p[3];u.volume=Math.max(0,Math.min(1,c.vol));
+ u.onend=u.onerror=()=>{setTimeout(()=>{if(!SS.speaking)duck(false);},120);};duck(true);try{SS.speak(u);}catch(_){duck(false);}window.__lastVoice={who,t,pitch:u.pitch,rate:u.rate};return u;}
+window.voiceSpeak=speak;
+// iOS: prime inside the user-gesture unlock
+let primed=0;function prime(){if(primed||!SS||!UT)return;primed=1;try{const u=new UT(' ');u.volume=0;SS.speak(u);}catch(_){}loadVoices();}
+['pointerdown','touchend','keydown','click'].forEach(ev=>addEventListener(ev,prime,{capture:true,passive:true}));
+// hooks: dialogue lines, skip/end, bubbles (locals' thank-you)
+const _show=dlgShow;dlgShow=function(l){const r=_show.apply(this,arguments);try{if(l&&l.t)speak(l.who,l.t);else cancel();}catch(_){}return r;};
+const _end=dlgEnd;dlgEnd=function(){cancel();return _end.apply(this,arguments);};
+const _skip=dlgSkip;dlgSkip=function(){cancel();return _skip.apply(this,arguments);};
+let lastB=null;const _bub=bubble;bubble=function(txt){if(txt!==lastB){lastB=txt;try{if(txt)speak('LOCAL',txt);}catch(_){}}return _bub.apply(this,arguments);};
+const _ace=aceUnlockCut;aceUnlockCut=function(){setTimeout(()=>{try{speak(5,'I am Ace. The shadows answer to me now... and I will fight beside you.');}catch(_){}},2300);return _ace.apply(this,arguments);};
+// mute toggle silences immediately
+const _tm=toggleMute;toggleMute=function(){const r=_tm.apply(this,arguments);if(muted)cancel();return r;};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cancel();});
 })();
 
 </script>
