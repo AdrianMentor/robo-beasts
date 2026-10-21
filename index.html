@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>ROBO BEASTS: Starfall Defenders</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<!DOCTYPE html><html><head><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta charset="utf-8"><title>ROBO BEASTS: Starfall Defenders</title><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 :root{--c:#3ef0ff;--g:#ffcc33}
 body{margin:0;background:radial-gradient(#101830,#03040a);color:#e8f4ff;font-family:"Segoe UI","Roboto","Helvetica Neue",Arial,sans-serif;display:flex;justify-content:center;user-select:none}
@@ -2205,4 +2205,14 @@ function sbWin(){const s=SB;if(s.won)return;s.won=1;const coins=60+s.route*30+(s
  if(Math.random()<0.55)try{giveGear(rollGear(s.en.some(e=>e.boss)),'Vorrex fleet');}catch(e){}if(Math.random()<0.5)try{giveItem(Math.random()<0.5?'pot_l':'revive','Vorrex fleet');}catch(e){}save();drawParty();
  stCam([-160,30,60,-40,0,0],2);STORY.cur.ti.userData.boost=2.5;const d=s.done;stAt(2.6,()=>{SB=null;sbHud();stClose();d&&d();});}
 function sbLose(){stCaption('HULL CRITICAL · EMERGENCY WARP',2600);log('The Titan barely escapes with an emergency warp. No rewards this time.');const d=SB.done;stAt(2.6,()=>{SB=null;sbHud();stClose();d&&d();});}
-</script></body></html>
+</script><button id="fsBtn" style="display:none;position:fixed;top:10px;right:10px;z-index:99999;padding:10px 14px;font:bold 15px sans-serif;color:#fff;background:rgba(20,30,60,.85);border:2px solid #3ef0ff;border-radius:10px;box-shadow:0 0 10px #3ef0ff">&#x26F6; Full Screen</button>
+<script>(function(){var b=document.getElementById('fsBtn');
+function isFs(){return document.fullscreenElement||document.webkitFullscreenElement;}
+function upd(){var portrait=window.matchMedia('(orientation: portrait)').matches;b.style.display=(portrait&&!isFs())?'block':'none';}
+b.addEventListener('click',function(e){e.stopPropagation();var el=document.documentElement;var r=el.requestFullscreen||el.webkitRequestFullscreen;
+if(r){try{var p=r.call(el);var lock=function(){if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});};if(p&&p.then)p.then(lock).catch(function(){});else lock();}catch(err){}}
+else{alert('Tip: on iPhone, tap Share then "Add to Home Screen" to play full screen, and turn the phone sideways.');}
+setTimeout(upd,500);});
+window.addEventListener('resize',upd);window.addEventListener('orientationchange',upd);document.addEventListener('fullscreenchange',upd);document.addEventListener('webkitfullscreenchange',upd);upd();})();</script>
+
+</body></html>
