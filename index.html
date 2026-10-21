@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>ROBO BEASTS: IRON PACK 3D</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>ROBO BEASTS: Starfall Defenders</title><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 :root{--c:#3ef0ff;--g:#ffcc33}
 body{margin:0;background:radial-gradient(#101830,#03040a);color:#e8f4ff;font-family:"Segoe UI","Roboto","Helvetica Neue",Arial,sans-serif;display:flex;justify-content:center;user-select:none}
@@ -948,7 +948,7 @@ function txt(t,x,y,c='#fff',sz=10,al='center',it=''){cx.font=`${it} 800 ${sz}px 
 function grad(t,x,y,sz,al){cx.font=`italic 900 ${sz}px "Segoe UI",Roboto,Arial Black,sans-serif`;cx.textAlign=al;const g=cx.createLinearGradient(0,y-sz,0,y);g.addColorStop(0,'#fff');g.addColorStop(0.45,'#ffe060');g.addColorStop(1,'#ff6a10');cx.lineWidth=sz/5;cx.strokeStyle='#000';cx.lineJoin='round';cx.strokeText(t,x,y);cx.fillStyle=g;cx.fillText(t,x,y);}
 function overlay(dt){cx.setTransform(2.4,0,0,2.4,0,0);cx.clearRect(0,0,400,220);
  if(sceneN==='title'){const g=cx.createLinearGradient(0,0,0,70);g.addColorStop(0,'rgba(0,0,10,.75)');g.addColorStop(1,'rgba(0,0,10,0)');cx.fillStyle=g;cx.fillRect(0,0,400,70);grad('ROBO BEASTS',200,38,30,'center');
-  txt('IRON PACK  ·  HUMAN · BEAST · ROBOT',200,52,'#3ef0ff',7);txt('Arrows + Enter/Space · Esc back · M mute · Mouse/touch OK',200,212,'#cde',7);return;}
+  txt('STARFALL DEFENDERS  ·  HUMAN · BEAST · ROBOT',200,52,'#3ef0ff',7);txt('Arrows + Enter/Space · Esc back · M mute · Mouse/touch OK',200,212,'#cde',7);return;}
  if(sceneN==='map'){cx.fillStyle='rgba(2,6,20,.72)';cx.fillRect(0,0,400,220);txt('TACTICAL MAP',14,20,'#3ef0ff',10,'left');txt('NEXT: '+NODES[S.node].n.toUpperCase(),386,20,'#ffe060',9,'right');
   cx.strokeStyle='#3ef0ff88';cx.setLineDash([3,3]);cx.lineWidth=1;cx.beginPath();NODES.forEach((n,i)=>i?cx.lineTo(n.x,n.y):cx.moveTo(n.x,n.y));cx.stroke();cx.setLineDash([]);
   NODES.forEach((n,i)=>{const c=i<S.node?'#3f8':i===S.node?'#ffcc33':'#567';cx.save();cx.translate(n.x,n.y);cx.rotate(0.785);cx.fillStyle=c;const z=i===S.node?5+Math.sin(clock*6):4;cx.fillRect(-z,-z,2*z,2*z);cx.restore();txt(n.boss?'☠ BOSS':'W'+n.wave,n.x,n.y+12,n.boss?'#f66':'#cde',5);});PLANETS.forEach((P,pi)=>txt(P.n,30+pi*56,44,NODES[S.node].planet===pi?'#ffe060':'#9ab',6));return;}
@@ -967,7 +967,7 @@ function overlay(dt){cx.setTransform(2.4,0,0,2.4,0,0);cx.clearRect(0,0,400,220);
  if(flashA>0){cx.fillStyle=`rgba(255,255,255,${flashA})`;cx.fillRect(0,0,400,220);flashA-=dt*2;}
  if((sceneN==='victory'&&!CUT)||sceneN==='ending'){cx.fillStyle='rgba(0,8,20,.7)';cx.fillRect(0,55,400,100);cx.fillStyle='#3ef0ff';cx.fillRect(0,55,400,1);cx.fillRect(0,154,400,1);
   grad(sceneN==='ending'?'VORREX QUEEN DEFEATED!':'MISSION COMPLETE',200,84,20,'center');(B.vmsg||[]).forEach((m,i)=>txt(m,200,102+i*12,'#fff',8));}
- if(sceneN==='over'){cx.fillStyle='rgba(20,0,0,.75)';cx.fillRect(0,0,400,220);txt('GAME OVER',200,105,'#ff4040',30,'center','italic');txt('The iron pack has fallen...',200,125,'#ccc',9);}}
+ if(sceneN==='over'){cx.fillStyle='rgba(20,0,0,.75)';cx.fillRect(0,0,400,220);txt('GAME OVER',200,105,'#ff4040',30,'center','italic');txt('The Starfall Defenders have fallen...',200,125,'#ccc',9);}}
 function drawCI(dt){const c=CI,t=c.t,k=t/c.dur,u=c.u,hero=!u.enemy,col=hero?HEROES[u.id].col:'#20ffe0';
  const v=cx.createRadialGradient(200,110,60,200,110,240);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,20,.85)');cx.fillStyle=v;cx.fillRect(0,0,400,220);
  for(let i=0;i<40;i++){const y=(i*37)%220,len=40+(i*53)%110,x=((i*91)-t*(700+i%5*200))%600;const xx=hero?((x%600)+600)%600-100:400-(((x%600)+600)%600-100);cx.strokeStyle=i%4?'rgba(255,255,255,.22)':col;cx.lineWidth=i%6?0.6:1.3;cx.beginPath();cx.moveTo(xx,y);cx.lineTo(xx+(hero?len:-len),y);cx.stroke();}
