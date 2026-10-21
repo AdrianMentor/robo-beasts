@@ -2344,6 +2344,56 @@ function sbWin(){const s=SB;if(s.won)return;s.won=1;const coins=60+s.route*30+(s
  stCam([-160,30,60,-40,0,0],2);STORY.cur.ti.userData.boost=2.5;const d=s.done;stAt(2.6,()=>{SB=null;sbHud();stClose();d&&d();});}
 function sbLose(){stCaption('HULL CRITICAL · EMERGENCY WARP',2600);log('The Titan barely escapes with an emergency warp. No rewards this time.');const d=SB.done;stAt(2.6,()=>{SB=null;sbHud();stClose();d&&d();});}
 </script><script>
+// ===== ROBUST AUTO-SAVE v7: versioned key + backup slot + legacy migration + Saved ✓ indicator =====
+(function(){
+const KEY='sfd_save_v7',BAK='sfd_save_v7_bak',LEGACY='robobeasts_save';window.SAVE_KEYS={KEY,BAK,LEGACY};
+function migrate(d){// same steps the old load() did, then fixParty() handles ver 3->6 and roster
+ if(!d||typeof d!=='object')return null;if(!d.ver||d.ver<3){(d.party||[]).forEach(h=>{h.form='human';h.cp=0;});d.ver=3;}(d.party||d.roster||[]).forEach(h=>{if(h.name==='FANG')h.name='AI';});
+ const s=fixParty(d);if(!s||!s.roster||!s.roster.length||typeof s.node!=='number')return null;s.items=s.items||{};s.coins=s.coins||0;return s;}
+function readSlot(k){try{const raw=localStorage.getItem(k);if(!raw)return null;const w=JSON.parse(raw);if(w&&w.fmt===7&&w.data){if(w.sum!==undefined&&w.sum!==JSON.stringify(w.data).length)return null;return {data:w.data,t:w.t};}return {data:w,t:0,legacy:1};}catch(e){return null;}}
+function loadAny(){for(const k of [KEY,BAK,LEGACY]){const r=readSlot(k);if(!r)continue;try{const s=migrate(JSON.parse(JSON.stringify(r.data)));if(s){s.__savedAt=r.t||s.__savedAt||0;s.__from=k;return s;}}catch(e){console.warn('save slot bad',k,e);}}return null;}
+window.saveInfo=function(){for(const k of [KEY,BAK,LEGACY]){const r=readSlot(k);if(r)return r;}return null;};
+let lastInd=0;
+function doSave(quiet){if(!S)return false;try{const o=Object.assign({},S);delete o.party;delete o.__from;o.ver=Math.max(6,o.ver||6);o.__savedAt=Date.now();
+  const json=JSON.stringify(o);const data=JSON.parse(json);// verify round-trip before touching slots
+  const w=JSON.stringify({fmt:7,t:o.__savedAt,sum:json.length,data});
+  const prev=localStorage.getItem(KEY);if(prev){try{const p=JSON.parse(prev);if(p&&p.fmt===7&&p.data)localStorage.setItem(BAK,prev);}catch(e){}}
+  localStorage.setItem(KEY,w);if(!readSlot(KEY))throw new Error('verify failed');
+  try{localStorage.setItem(LEGACY,json);}catch(e){}// keep old key updated for older builds
+  S.__savedAt=o.__savedAt;if(!quiet)showSaved();return true;}catch(e){console.warn('save failed',e);return false;}}
+save=function(){return doSave(false);};
+load=function(){return loadAny();};
+window.autoSave=q=>doSave(q);
+// "Saved ✓" indicator: tiny, inside the 3D view top-center under the banner area, never takes taps
+const ind=document.createElement('div');ind.id='savedInd';ind.textContent='💾 Saved ✓';
+const st=document.createElement('style');st.textContent='#savedInd{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:5;pointer-events:none;font:700 11px system-ui,sans-serif;color:#9fffc0;background:#000a;border:1px solid #3f8a;border-radius:8px;padding:2px 8px;opacity:0;transition:opacity .25s}#savedInd.on{opacity:1}';document.head.appendChild(st);
+($('view')||document.body).appendChild(ind);
+function showSaved(){const n=performance.now();if(n-lastInd<1500)return;lastInd=n;ind.classList.add('on');clearTimeout(ind._t);ind._t=setTimeout(()=>ind.classList.remove('on'),1000);}
+window.showSaved=showSaved;
+// extra auto-save points
+const W=(name,after)=>{const f=window[name];if(typeof f!=='function')return;window[name]=function(){const r=f.apply(this,arguments);try{after&&after.apply(this,arguments);}catch(e){}try{if(S)save();}catch(e){}return r;};};
+W('victory');W('transform');W('giveGear');W('useItem');
+// level-up / space battle end / story unlock flows already call save(); add page lifecycle saves (iOS kills home-screen apps)
+const quick=()=>{try{if(S)doSave(true);}catch(e){}};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')quick();});
+addEventListener('pagehide',quick);addEventListener('beforeunload',quick);addEventListener('freeze',quick);
+setInterval(()=>{if(S&&document.visibilityState==='visible')doSave(true);},45000);
+// never wipe progress on the ending: keep the save (just mark cleared)
+const _rm=Storage.prototype.removeItem;Storage.prototype.removeItem=function(k){if(this===localStorage&&k===LEGACY){try{if(S){S.cleared=1;doSave(true);}}catch(e){}return;}return _rm.call(this,k);};
+// MAIN MENU: Continue shows planet/level/time; New Game confirms before overwrite
+function ago(t){if(!t)return 'earlier';const s=(Date.now()-t)/1000;if(s<60)return 'just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' h ago';return new Date(t).toLocaleDateString();}
+const _title=title;title=function(){const r=_title.apply(this,arguments);try{const sv=loadAny();if(!M||!M.items)return r;
+ const ci=M.items.findIndex(i=>/^Continue/.test(i.l));const ni=M.items.findIndex(i=>/^New Game/.test(i.l));
+ if(sv&&ci>=0){const n=NODES[Math.min(sv.node,NODES.length-1)]||NODES[0];const P=PLANETS[n.planet];const lv=Math.max(...sv.roster.map(h=>h.lvl||1));
+  M.items[ci]={l:`▶ CONTINUE <small>${P?P.n:''} · ${n.boss?'Boss':'Wave '+n.wave} · Lv ${lv} · ${sv.coins||0}◉ · saved ${ago(sv.__savedAt)}</small>`,f:()=>{S=sv;log(`Welcome back! Resuming ${P?P.n:''} ${n.boss?'boss':'wave '+n.wave}.`);map();}};
+  const it=M.items.splice(ci,1)[0];M.items.unshift(it);M.sel=0;}
+ if(sv){const ng=M.items.find(i=>/^New Game/.test(i.l));if(ng){const go=ng.f;ng.f=()=>menu([{l:'Keep my save <small>go back</small>',f:title},{l:'⚠ Yes, start over <small>erases current progress</small>',f:()=>{try{const cur=localStorage.getItem(KEY);if(cur)localStorage.setItem('sfd_save_prev_newgame',cur);}catch(e){}go();}}],title,'START A NEW GAME? Your saved progress will be replaced.');}}
+ drawMenu();}catch(e){console.warn(e)}return r;};
+try{if(sceneN==='title'&&!S)title();}catch(e){}
+})();
+
+</script>
+<script>
 // ===== EXTRAS: Daily Chest · Easy Mode · Auto-Battle · Pets · Skins · Stars · Badges (saved in S.ex) =====
 (function(){
 const EXd=()=>{if(!S)return null;S.ex=S.ex||{};const e=S.ex;e.pets=e.pets||[];e.skin=e.skin||{};e.owned=e.owned||{};e.stars=e.stars||{};e.badges=e.badges||{};e.kills=e.kills||0;e.chests=e.chests||0;return e;};
