@@ -693,11 +693,11 @@ const SK={
  twin:{n:'Twin Saber Rush',t:'sword',p:0.85,hits:2,en:6,form:'robot',hero:0,st:'slash'},
  rain:{n:'Photon Rain',t:'beam',p:1.15,en:12,form:'robot',all:1,hero:1,st:'beam'}};
 const HEROES=[
- {name:'AI',human:'Kai Ren',beast:'Wolf',col:'#3ef0ff',hp:64,en:22,atk:13,def:6,spd:11},
+ {name:'AI',human:'Kai Ren',beast:'Wolf',col:'#3ef0ff',hp:64,en:22,atk:300,def:300,spd:300},
  {name:'AERO',human:'Mira Sol',beast:'Dragon',col:'#ffd840',hp:54,en:30,atk:11,def:5,spd:14},
  {name:'LEO',human:'Dax Corran',beast:'Rex',col:'#ff4050',hp:78,en:20,atk:15,def:8,spd:8},
- {name:'NAIARA',human:'Naiara',beast:'',col:'#b060ff',hp:72,en:34,atk:14,def:6,spd:12,single:1,basic:'n_basic'},
- {name:'BABY',human:'The Baby',beast:'',col:'#ff9ae0',hp:1000000,en:40,atk:12,def:4,spd:9,single:1,fixedHP:1,basic:'b_basic'},
+ {name:'NAIARA',human:'Naiara',beast:'',col:'#b060ff',hp:72,en:34,atk:300,def:300,spd:300,single:1,basic:'n_basic'},
+ {name:'BABY',human:'The Baby',beast:'',col:'#ff9ae0',hp:1000000,en:40,atk:1000,def:1000,spd:1000,single:1,fixedHP:1,basic:'b_basic'},
  {name:'ACE',human:'Ace',beast:'',col:'#8a40ff',hp:70,en:34,atk:15,def:6,spd:11,single:1,basic:'a_basic'}];
 const SINGLE=id=>!!HEROES[id].single;
 function skillsFor(id,form){return Object.entries(SK).filter(([k,s])=>!s.basic&&(id===1&&form==='beast'?(s.dragon||s.super):SINGLE(id)?(s.hero===id||s.super):((s.form===form||s.form==='any')&&(s.hero===undefined||s.hero===id)&&s.nohero!==id))).map(([k])=>k);}
