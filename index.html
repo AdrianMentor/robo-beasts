@@ -1403,34 +1403,22 @@ const THR=T;const CAST={
   T.at(0.5,()=>{B.banner={n:'GALE · TIDE',t:0};ts.forEach(t=>{windFx(a,t);waterFx(a,t);});});ts.forEach((t,i)=>T.at(1.0+i*0.1,()=>leoHit(a,t,0.8,s.n,{sc:0x9ee6ff,ic:0x40a0ff})));
   T.at(1.6,()=>{B.banner={n:'THUNDER CORONATION',t:0,big:1};});for(let k=0;k<9;k++)T.at(1.8+k*0.17,()=>{const lv=alive(B.en);if(!lv.length)return;const t=lv[k%lv.length];skyBolt(t,k%2?0x80e0ff:0xc8a0ff,0.22);leoHit(a,t,0.55,s.n,{sc:0xffffff,ic:NAI_COL});});
   T.at(3.5,()=>{alive(B.en).forEach((t,i)=>{orbStrike(a,t,0,0.6,s.n);orbStrike(a,t,1,0.6,s.n);});CAM.shake=0.5;});return 4.3;},
- b_basic(a,ts,s,T){const t=ts[0];const C=cineStart();C.objs=[];a.cast=1;a.anim={st:'palm',t:0,dur:3.2,melee:false};window.__rock={ph:'glow'};
-  const tc=home(t).clone();const hb=home(a);const big=(t.boss?1.6:1.15);
-  // eyes glow psychic purple
-  const eyes=[];[-1,1].forEach(sd=>{const e=celSprite(orbTex(0xc060ff),0.35,0.35);e.position.copy(center(a)).add(new V3(0.12,0.55,0.09*sd));scene.add(e);C.objs.push(e);eyes.push(e);});
-  const aura=celSprite(orbTex(0x9040ff),2.4,2.4);aura.position.copy(center(a));scene.add(aura);C.objs.push(aura);
-  // ground cracks
-  const cracks=new THR.Group();for(let k=0;k<10;k++){const m=new THR.Mesh(new THR.BoxGeometry(2.2+Math.random()*1.4,0.03,0.09),new THR.MeshBasicMaterial({color:0x1a0f08}));const an=k/10*PI*2+Math.random()*0.3;m.position.set(Math.cos(an)*1.5,0.04,Math.sin(an)*1.5);m.rotation.y=-an;cracks.add(m);}cracks.position.copy(tc);cracks.scale.setScalar(0.01);scene.add(cracks);C.objs.push(cracks);
-  // four craggy blocky boulders
-  const rockM=new THR.MeshToonMaterial({color:0x7a6a58});const R=2.4*big;const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
-  const bs=dirs.map(([dx,dz],k)=>{const g=new THR.Group();for(let q=0;q<5;q++){const sz=0.55+Math.random()*0.45;const b=new THR.Mesh(new THR.BoxGeometry(sz,sz*0.9,sz),rockM);b.position.set((Math.random()-0.5)*0.6,(Math.random()-0.5)*0.5,(Math.random()-0.5)*0.6);b.rotation.set(Math.random(),Math.random(),Math.random());g.add(b);}
-    const gl=celSprite(orbTex(0xb050ff),2.6,2.6);gl.material.opacity=0;g.add(gl);g.userData={gl,dx,dz,ph:k*1.3};g.scale.setScalar(big);g.position.set(tc.x+dx*R,-1.2,tc.z+dz*R);scene.add(g);C.objs.push(g);return g;});
-  let crushed=0,sq=0;const SQ=model(t).root.children.map(c=>({c,s:c.scale.clone()}));const unSQ=()=>SQ.forEach(o=>o.c.scale.copy(o.s));C.cleanup=unSQ;
-  const drv=addFx({life:1e9,max:1e9,up:(f,dt)=>{const e=T.el();window.__rock.el=e;
-   eyes.forEach(x=>x.scale.setScalar(0.25+0.15*Math.sin(e*20)+Math.min(0.3,e*0.4)));aura.material.opacity=Math.min(0.7,e)*(e<3?1:0);
-   if(e<0.6)camLook(center(a).clone().add(new V3(1.6,0.6,0.4)),center(a).clone().add(new V3(0,0.4,0)),8);
-   else{const an=(e-0.6)*1.5;const rr=8.5*big;camLook(new V3(tc.x+Math.cos(an)*rr,3.4+1.2*big,tc.z+Math.sin(an)*rr),tc.clone().setY(1.6*big),5);}// orbit to show all four sides
-   if(e>=0.6)cracks.scale.setScalar(Math.min(1.3*big,(e-0.6)*3));
-   bs.forEach(g=>{const u=g.userData;if(e>=0.8&&e<2.05){window.__rock.ph='lift';const q=Math.min(1,(e-0.8)/0.5);g.position.y=-1.2+q*(2.6*big+1.2)+0.2*Math.sin(e*4+u.ph);g.rotation.y+=dt*0.8;g.rotation.x=0.15*Math.sin(e*3+u.ph);u.gl.material.opacity=0.55+0.2*Math.sin(e*12+u.ph);if(Math.random()<0.15)dust(g.position.clone().setY(0.1),2);}
-     if(e>=2.05&&!crushed){const q=Math.min(1,(e-2.05)/0.22);const r=R*(1-q)+0.8*big*q;g.position.set(tc.x+u.dx*r,1.2*big+(2.6*big-1.2*big)*(1-q),tc.z+u.dz*r);}
-     if(crushed){u.gl.material.opacity*=0.9;g.children.forEach((b,bi)=>{if(b.isMesh){b.position.y-=dt*(2+bi);b.scale.multiplyScalar(1-dt*1.4);}});}});
-   if(e>=2.27&&!crushed){crushed=1;window.__rock.ph='crush';CAM.shake=1.3;flashA=0.45;HSTOP=0.12;const c=center(t);debris(tc,26,0x6a5a48,9);dust(tc,22,0x9a8466,1.4);shockRing(tc.clone().setY(0.1),7*big,0xd0b0ff,0.6);sparks(c,0xc080ff,20,8);
-     try{SFX2.explosion(true);bhSfx('rumble');bhSfx('pop');}catch(_){}}
-   // cartoon squash then pop back
-   if(crushed){sq=e-2.27;const k=sq<0.5?1:Math.max(0,1-(sq-0.5)/0.35);const w=1+0.45*k;let sx=w,sy=1-0.6*k;if(sq>0.85&&sq<1.1){sx=1;sy=1+0.2*Math.sin((sq-0.85)*4*PI);}SQ.forEach(o=>{o.c.scale.set(o.s.x*sx,o.s.y*sy,o.s.z*sx);});}}});
-  T.at(0.05,()=>{try{SFX2.psychic();}catch(_){}});
-  T.at(0.8,()=>{CAM.shake=0.5;debris(tc,12,0x6a5a48,4);try{bhSfx('rumble');}catch(_){}});
-  T.at(2.35,()=>leoHit(a,t,s.p,s.n,{sc:0xc080ff,ic:0x9040ff,kb:0.3}));
-  T.at(3.35,()=>{unSQ();drv.life=0;window.__rock.ph='done';cineEnd();});return 3.45;},
+ b_basic(a,ts,s,T){const t=ts[0];a.cast=1;a.anim={st:'palm',t:0,dur:1.1,melee:false};window.__rock={ph:'lift'};
+  const tc=home(t).clone();const big=(t.boss?1.5:1.1);const R=1.9*big;const rockM=new THR.MeshToonMaterial({color:0x7a6a58});
+  const bs=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dz])=>{const g=new THR.Group();for(let q=0;q<3;q++){const sz=0.45+Math.random()*0.35;const b=new THR.Mesh(new THR.BoxGeometry(sz,sz*0.9,sz),rockM);b.position.set((Math.random()-0.5)*0.4,(Math.random()-0.5)*0.35,(Math.random()-0.5)*0.4);b.rotation.set(Math.random(),Math.random(),Math.random());g.add(b);}
+   const gl=celSprite(orbTex(0xb050ff),1.8,1.8);gl.material.opacity=0.5;g.add(gl);g.scale.setScalar(big);g.position.set(tc.x+dx*R,-0.8,tc.z+dz*R);g.userData={dx,dz};scene.add(g);return g;});
+  const SQ=model(t).root.children.map(c=>({c,s:c.scale.clone()}));let crushed=0;
+  const kill=()=>{bs.forEach(g=>scene.remove(g));SQ.forEach(o=>o.c.scale.copy(o.s));};
+  const drv=addFx({life:2,max:2,up:(f,dt)=>{const e=T.el();
+   bs.forEach(g=>{const u=g.userData;if(e<0.35){const q=e/0.35;g.position.y=-0.8+q*(1.0*big+0.8);g.rotation.y+=dt*2;}
+    else if(e<0.55){const q=(e-0.35)/0.2;const r=R*(1-q)+0.7*big*q;g.position.set(tc.x+u.dx*r,1.0*big,tc.z+u.dz*r);}
+    else{g.children.forEach((b,bi)=>{if(b.isMesh){b.position.y-=dt*(2+bi);b.scale.multiplyScalar(Math.max(0,1-dt*3));}else b.material.opacity*=0.85;});}});
+   if(e>=0.55&&!crushed){crushed=1;window.__rock.ph='crush';CAM.shake=0.6;debris(tc,12,0x6a5a48,6);dust(tc,10,0x9a8466,1.0);shockRing(tc.clone().setY(0.1),3.5*big,0xd0b0ff,0.4);try{SFX2.punch();bhSfx('pop');}catch(_){}}
+   if(crushed){const k=e-0.55;const q=k<0.25?1:Math.max(0,1-(k-0.25)/0.2);const w=1+0.4*q;let sx=w,sy=1-0.5*q;if(k>0.45&&k<0.6){sx=1;sy=1+0.15*Math.sin((k-0.45)/0.15*PI);}SQ.forEach(o=>o.c.scale.set(o.s.x*sx,o.s.y*sy,o.s.z*sx));}
+   if(f.life<=dt)kill();}});
+  T.at(0.02,()=>{try{SFX2.psychic();}catch(_){}dust(tc,6);});
+  T.at(0.57,()=>leoHit(a,t,s.p,s.n,{sc:0xc080ff,ic:0x9040ff,kb:0.3}));
+  T.at(1.15,()=>{drv.life=0;kill();window.__rock.ph='done';});return 1.2;},
  b_truck(a,ts,s,T){const t=ts[0];a.cast=1;const tk=mkTruck();const h=home(t);tk.position.set(h.x-0.5,8,h.z);tk.rotation.set(0.3,0.4,0.25);scene.add(tk);B.banner={n:'18-WHEELER SUMMON',t:0,big:1};
   const rg=celSprite(ringTex(0xd080ff),3,1.2);rg.position.set(h.x,0.06,h.z);addFx({mesh:rg,life:1.0,max:1.0,up:f=>{rg.material.opacity=Math.floor(f.life/f.max*6)%2?1:0.5;}});
   const camT=()=>{CAM.tl.copy(center(t)).add(new V3(0,1.2,0));CAM.tp.copy(center(t)).add(new V3(-2.5,2.6,7.5));CAM.spd=6;};T.at(0.05,camT);
@@ -2716,7 +2704,8 @@ setInterval(()=>{try{autoBtn.style.display=(sceneN==='battle'&&B)?'block':'none'
 // ===== VOICES: Web Speech API (system voices only, nothing recorded) =====
 (function(){
 const SS=('speechSynthesis' in window)?window.speechSynthesis:null,UT=window.SpeechSynthesisUtterance;
-const cfg=()=>{const e=(S&&S.ex)||null;let g={};try{g=JSON.parse(localStorage.getItem('sfd_voice')||'{}');}catch(_){}const v=Object.assign({on:1,vol:1},g,e&&e.voice||{});return v;};
+try{if(!localStorage.getItem('sfd_voice_mig6')){const g0=JSON.parse(localStorage.getItem('sfd_voice')||'{}');g0.on=1;if(!(g0.vol>0))g0.vol=1;localStorage.setItem('sfd_voice',JSON.stringify(g0));localStorage.setItem('sfd_voice_mig6','1');window.__voiceMig=1;}}catch(_){}
+const cfg=()=>{const e=(S&&S.ex)||null;if(e&&e.voice&&!e.voiceMig6){e.voice.on=1;if(!(e.voice.vol>0))e.voice.vol=1;e.voiceMig6=1;}let g={};try{g=JSON.parse(localStorage.getItem('sfd_voice')||'{}');}catch(_){}const v=Object.assign({on:1,vol:1},g,e&&e.voice||{});return v;};
 function setCfg(k,val){const v=cfg();v[k]=val;try{localStorage.setItem('sfd_voice',JSON.stringify(v));}catch(_){}if(S){S.ex=S.ex||{};S.ex.voice=v;try{save();}catch(_){}}}
 window.voiceCfg=cfg;window.voiceSet=setCfg;
 let VO=[];const F=/female|samantha|karen|victoria|moira|tessa|fiona|zira|susan|serena|allison|ava|kate|joanna|salli|kimberly|amy|emma|nicky|libby|sonia|aria|jenny|google us english$|google uk english female/i,Mm=/\bmale\b|daniel|alex|fred|tom\b|aaron|arthur|rishi|david|mark|guy|ryan|oliver|thomas|george|lee|gordon|google uk english male/i;
@@ -2737,12 +2726,23 @@ function cancel(){if(!SS)return;try{SS.cancel();}catch(_){}duck(false);}
 window.voiceCancel=cancel;
 function speak(who,text){if(!SS||!UT)return null;const c=cfg();if(!c.on||muted||c.vol<=0){return null;}
  let t=who===4?BABBLE[Math.floor(Math.random()*BABBLE.length)]+(Math.random()<0.5?' '+BABBLE[Math.floor(Math.random()*BABBLE.length)]:''):clean(text);if(!t)return null;
- const p=PROF[who]||PROF.NAR;try{SS.cancel();}catch(_){}if(!VO.length)loadVoices();
+ const p=PROF[who]||PROF.NAR;if(!VO.length)loadVoices();
  const u=new UT(t);const v=pick(p[0],p[1]);if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-US';u.pitch=p[2];u.rate=p[3];u.volume=Math.max(0,Math.min(1,c.vol));
- u.onend=u.onerror=()=>{setTimeout(()=>{if(!SS.speaking)duck(false);},120);};duck(true);try{SS.speak(u);}catch(_){duck(false);}window.__lastVoice={who,t,pitch:u.pitch,rate:u.rate};return u;}
+ // keep strong refs: Safari garbage-collects in-flight utterances (speech stops, onend never fires)
+ KEEP.push(u);if(KEEP.length>8)KEEP.shift();let started=0;u.onstart=()=>{started=1;};
+ u.onend=u.onerror=()=>{const i=KEEP.indexOf(u);if(i>=0)KEEP.splice(i,1);setTimeout(()=>{if(!SS.speaking&&!KEEP.some(x=>x.text&&x.text.trim()))duck(false);},120);};duck(true);
+ const go=()=>{try{SS.resume();}catch(_){}try{SS.speak(u);}catch(_){duck(false);}
+  // iOS wedge guard: if the engine never starts this line, reset it once and retry
+  setTimeout(()=>{if(!started&&KEEP.includes(u)){try{SS.cancel();}catch(_){}setTimeout(()=>{try{SS.resume();SS.speak(u);}catch(_){}},80);}},2500);};
+ // only cancel when actually replacing a line; iOS drops a speak() issued in the same tick as cancel()
+ if(SS.speaking||SS.pending){try{SS.cancel();}catch(_){}setTimeout(go,90);}else go();
+ window.__lastVoice={who,t,pitch:u.pitch,rate:u.rate,vol:u.volume,voice:v&&v.name};return u;}
+const KEEP=[];window.__voiceKeep=KEEP;
 window.voiceSpeak=speak;
 // iOS: prime inside the user-gesture unlock
-let primed=0;function prime(){if(primed||!SS||!UT)return;primed=1;try{const u=new UT(' ');u.volume=0;SS.speak(u);}catch(_){}loadVoices();}
+let primed=0;function prime(){if(!SS||!UT)return;try{SS.resume();}catch(_){}if(primed)return;primed=1;try{const u=new UT(' ');u.volume=0;KEEP.push(u);SS.speak(u);}catch(_){}loadVoices();setTimeout(loadVoices,500);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&SS){try{SS.resume();}catch(_){}}});
+window.__voicePrimed=()=>primed;
 ['pointerdown','touchend','keydown','click'].forEach(ev=>addEventListener(ev,prime,{capture:true,passive:true}));
 // hooks: dialogue lines, skip/end, bubbles (locals' thank-you)
 const _show=dlgShow;dlgShow=function(l){const r=_show.apply(this,arguments);try{if(l&&l.t)speak(l.who,l.t);else cancel();}catch(_){}return r;};
@@ -2784,7 +2784,7 @@ Object.assign(CAST,{
   [0.1,1.0,1.8].forEach(x=>{const rg=new THR.Mesh(new THR.TorusGeometry(0.3,0.04,6,16),TM(0xd0a040));rg.rotation.y=PI/2;rg.position.x=x;rot.add(rg);});
   const hand=new THR.Mesh(new THR.BoxGeometry(0.5,0.12,0.12),TM(0x2a2018));hand.position.set(-0.1,0.42,0);gun.add(hand);
   gun.scale.setScalar(0.01);scene.add(gun);C.objs.push(gun);const portal=celSprite(ringTex(0x40e0ff),3,3);scene.add(portal);C.objs.push(portal);
-  const hb=home(a);let spin=0,heat=0;const B0=1.6,B1=4.1;
+  const hb=home(a);let spin=0,heat=0;const B0=1.6,B1=4.1;const hid=S.party.filter(u=>u!==a).concat(B.en.filter(u=>u!==t&&u.hp>0)).map(u=>{const r=model(u).root;const v=r.visible;r.visible=false;return [r,v];});let hon=1;const hideT=addFx({life:6,max:6,up:()=>{if(hon)hid.forEach(([r])=>r.visible=false);}});C.cleanup=()=>{hon=0;hideT.life=0;hid.forEach(([r,v])=>r.visible=v);};
   const place=()=>{const c=center(t);const p=hb.clone().add(new V3(0.35,0.75,0.25));const d=c.clone().sub(p);gun.position.copy(p);gun.rotation.order='YZX';gun.rotation.y=Math.atan2(-d.z,d.x);gun.rotation.z=Math.atan2(d.y,Math.hypot(d.x,d.z));};
   const drv=addFx({life:1e9,max:1e9,up:(f,dt)=>{const e=T.el();window.__gat.el=e;place();
    if(e<0.5){portal.position.copy(gun.position);portal.scale.setScalar(0.5+e*6);portal.material.rotation+=dt*8;gun.scale.setScalar(Math.max(0.01,e*2));}else{portal.scale.multiplyScalar(0.85);gun.scale.setScalar(e<4.9?1:Math.max(0.01,1-(e-4.9)/0.4));}
@@ -2792,8 +2792,11 @@ Object.assign(CAST,{
    if(e>=B1){spin=Math.max(0,spin-dt*14);}
    rot.rotation.x+=spin*dt;
    const c=center(t);const back=c.clone().sub(hb).setY(0).normalize();const side=new V3(-back.z,0,back.x);
-   if(e<B0)camLook(gun.position.clone().addScaledVector(side,-2.6).addScaledVector(back,-1.2).add(new V3(0,0.6,0)),gun.position.clone().addScaledVector(back,1.2),6);
-   else camLook(hb.clone().addScaledVector(back,-2.4).addScaledVector(side,-2.2).add(new V3(0,1.6,0)),c,5);
+   if(side.z<0)side.negate();const asp=Math.max(0.35,Math.min(2.2,cam.aspect||1.5));const bc=gun.position.clone().addScaledVector(back,1.3);
+   if(e<0.6){window.__gat.cam='summon';camLook(hb.clone().addScaledVector(back,2.4).addScaledVector(side,1.7).add(new V3(0,0.45,0)),center(a).add(new V3(0,0.25,0)),8);}
+   else if(e<B0){window.__gat.cam='spin';const bm=gun.position.clone().addScaledVector(back,1.5);camLook(bm.clone().addScaledVector(side,2.3/Math.min(1,asp)).addScaledVector(back,1.2).add(new V3(0,0.35,0)),bm,8);}
+   else if(e<B1){window.__gat.cam='fire';const m=gun.position.clone().lerp(c,0.5);const len=gun.position.distanceTo(c);const pr=(e-B0)/(B1-B0);const dist=(len*0.75+2.5)/Math.min(1,asp*0.9)*(1-0.12*pr);camLook(m.clone().addScaledVector(side,dist).add(new V3(0,1.0,0)),m,5);}
+   else{window.__gat.cam='vent';const bm=gun.position.clone().addScaledVector(back,1.4);camLook(bm.clone().addScaledVector(side,2.0/Math.min(1,asp)).addScaledVector(back,0.6).add(new V3(0,0.5,0)),bm,8);}
    if(e>=B0&&e<B1){window.__gat.ph='fire';heat=Math.min(1,heat+dt*0.45);CAM.shake=Math.max(CAM.shake,0.32);gun.position.addScaledVector(back,-0.06*Math.random());
     for(let q=0;q<2;q++){const k=Math.floor(Math.random()*8);const p0=tips[k].getWorldPosition(new V3());const p1=c.clone().add(new V3((Math.random()-0.5)*0.6,(Math.random()-0.5)*0.6,(Math.random()-0.5)*0.6));boltFx(p0,p1,Math.random()<0.5?0x40e0ff:0xffe080,0.05,0.07,3);
      const fl=celSprite(orbTex(0xffffff),0.6,0.6);fl.position.copy(p0);scene.add(fl);addFx({mesh:fl,life:0.05,max:0.05});}
@@ -2965,8 +2968,14 @@ function nameOf(w){return typeof w==='number'?HEROES[w].name:(SPK[w]&&SPK[w].n)|
 let chatTimers=[];
 function showChat(){chatTimers.forEach(clearTimeout);chatTimers=[];const ch=pickChat();if(!ch)return;let t=600;let box=document.getElementById('hubChat');
  if(!box){box=document.createElement('div');box.id='hubChat';box.style.cssText='position:fixed;left:50%;top:12px;transform:translateX(-50%);max-width:min(560px,90vw);background:rgba(8,16,32,.88);border:1px solid #3ef0ff55;border-radius:10px;padding:8px 12px;color:#e8f6ff;font:600 14px system-ui;z-index:40;pointer-events:none;transition:opacity .3s';document.body.appendChild(box);}
- ch.l.forEach(([w,txt])=>{chatTimers.push(setTimeout(()=>{if(sceneN!=='hub'){box.style.opacity=0;return;}const col=typeof w==='number'?HEROES[w].col:(SPK[w]&&SPK[w].c)||'#fff';box.innerHTML=`<b style="color:${col}">${nameOf(w)}:</b> ${txt}`;box.style.opacity=1;try{log(`${nameOf(w)}: ${txt}`);}catch(_){}try{(window.speak||(()=>null))(w,txt.replace(/\*[^*]*\*/g,w===4?'ba ba!':''));}catch(e){console.warn('chat voice',e);}window.__chatSpoke=(window.__chatSpoke||0)+1;},t));t+=Math.max(2200,txt.length*55);});
- chatTimers.push(setTimeout(()=>{box.style.opacity=0;},t+400));}
+ // play lines one after another: next line starts when the previous utterance ENDS (never cut a line off mid-speech)
+ const run=k=>{if(k>=ch.l.length){chatTimers.push(setTimeout(()=>{box.style.opacity=0;},900));return;}const [w,txt]=ch.l[k];if(sceneN!=='hub'){box.style.opacity=0;return;}
+  const col=typeof w==='number'?HEROES[w].col:(SPK[w]&&SPK[w].c)||'#fff';box.innerHTML=`<b style="color:${col}">${nameOf(w)}:</b> ${txt}`;box.style.opacity=1;try{log(`${nameOf(w)}: ${txt}`);}catch(_){}
+  let u=null;try{u=(window.speak||(()=>null))(w,txt.replace(/\*[^*]*\*/g,w===4?'ba ba!':''));}catch(e){console.warn('chat voice',e);}window.__chatSpoke=(window.__chatSpoke||0)+1;
+  let nx=0;const next=()=>{if(nx)return;nx=1;chatTimers.push(setTimeout(()=>run(k+1),350));};const minT=Math.max(1800,txt.length*45);const t0=performance.now();
+  if(u){const oe=u.onend;u.onend=u.onerror=function(){try{oe&&oe.apply(this,arguments);}catch(_){}const left=minT-(performance.now()-t0);left>0?chatTimers.push(setTimeout(next,left)):next();};}
+  chatTimers.push(setTimeout(next,u?Math.max(9000,txt.length*120):minT));};
+ chatTimers.push(setTimeout(()=>run(0),t));}
 window.showHubChat=showChat;
 const _bh=bridgeHub;bridgeHub=function(){const r=_bh.apply(this,arguments);try{showChat();}catch(e){console.warn('chat',e);}return r;};
 })();
