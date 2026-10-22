@@ -2941,16 +2941,45 @@ CAST.a_sun=function(a,ts,s,T){const t=ts[0];const C=cineStart();C.objs=[];window
 
 
 // ---------- ACE: ASHEN RIDE (Umbra the spectral warhorse) ----------
-function mkUmbra(){const g=new THR.Group(),body=new THR.Group();g.add(body);const BK=new THR.MeshToonMaterial({color:0x14101c}),AR=new THR.MeshToonMaterial({color:0x2a2238}),GD=new THR.MeshToonMaterial({color:0xe0b040,emissive:0x402a00});
- const P=(geo,m,x,y,z,par=body)=>{const o=new THR.Mesh(geo,m);o.position.set(x,y,z);par.add(o);return o;};
- P(new THR.BoxGeometry(2.4,1.1,1.0),BK,0,2.1,0);P(new THR.BoxGeometry(1.0,1.15,1.06),AR,0.7,2.15,0);P(new THR.BoxGeometry(1.04,0.08,1.1),GD,0.7,2.72,0);P(new THR.BoxGeometry(0.9,1.0,1.06),AR,-0.8,2.15,0);P(new THR.BoxGeometry(0.94,0.08,1.1),GD,-0.8,2.7,0);
- const neck=new THR.Group();neck.position.set(1.05,2.5,0);body.add(neck);const nk=P(new THR.BoxGeometry(0.55,1.3,0.6),BK,0.2,0.5,0,neck);nk.rotation.z=-0.5;
- const head=new THR.Group();head.position.set(0.6,1.1,0);neck.add(head);P(new THR.BoxGeometry(1.0,0.45,0.5),BK,0.35,0,0,head);P(new THR.BoxGeometry(0.6,0.3,0.54),AR,0.2,0.18,0,head);P(new THR.BoxGeometry(0.62,0.05,0.56),GD,0.2,0.34,0,head);
- [-0.18,0.18].forEach(z=>{P(new THR.BoxGeometry(0.12,0.3,0.1),BK,-0.05,0.38,z,head);const e=P(new THR.BoxGeometry(0.14,0.08,0.05),new THR.MeshBasicMaterial({color:0xc070ff}),0.42,0.1,z*1.45,head);const gl=celSprite(orbTex(0xa050ff),0.45,0.45);gl.material.blending=THR.AdditiveBlending;gl.material.depthWrite=false;gl.position.copy(e.position);head.add(gl);});
- const legs=[];[[0.85,0.3],[0.85,-0.3],[-0.85,0.3],[-0.85,-0.3]].forEach(([x,z],i)=>{const L=new THR.Group();L.position.set(x,1.6,z);body.add(L);P(new THR.BoxGeometry(0.28,1.0,0.28),BK,0,-0.5,0,L);const lo=new THR.Group();lo.position.y=-1.0;L.add(lo);P(new THR.BoxGeometry(0.22,0.6,0.22),BK,0,-0.3,0,lo);P(new THR.BoxGeometry(0.3,0.14,0.3),GD,0,-0.62,0,lo);const em=celSprite(orbTex(0x9a40ff),0.5,0.5);em.material.blending=THR.AdditiveBlending;em.material.depthWrite=false;em.position.y=-0.65;lo.add(em);legs.push({L,lo,ph:i<2?0:PI});});
- const mist=[];const mk=(par,x,y,n,sz)=>{for(let k=0;k<n;k++){const m=celSprite(orbTex(k%2?0x2a1838:0x4a2a68),sz,sz);m.material.depthWrite=false;m.material.opacity=0.75;m.material.color.setHex(0x3a2850);m.position.set(x-k*0.18,y+k*0.12,(Math.random()-0.5)*0.3);par.add(m);mist.push({m,b:m.position.clone(),k});}};
- mk(neck,0,0.6,GQ>=1?4:7,0.6);mk(body,-1.3,2.3,GQ>=1?4:7,0.7);
- g.userData={body,neck,head,legs,mist};g.scale.setScalar(0.9);return g;}
+function mkUmbra(){const g=new THR.Group();const BK=new THR.MeshStandardMaterial({color:0x17121f,roughness:0.42,metalness:0.15,emissive:0x12051f,emissiveIntensity:0.6}),AR=new THR.MeshStandardMaterial({color:0x2c2440,roughness:0.3,metalness:0.6}),GD=new THR.MeshStandardMaterial({color:0xe0b040,roughness:0.3,metalness:0.8,emissive:0x3a2600});
+ const HIP=new V3(-0.85,1.35,0);const body=new THR.Group();body.position.copy(HIP);g.add(body);const inner=new THR.Group();inner.position.set(-HIP.x,-HIP.y,0);body.add(inner);
+ const P=(geo,m,x,y,z,par=inner,rz=0,sc)=>{const o=new THR.Mesh(geo,m);o.position.set(x,y,z);o.rotation.z=rz;if(sc)o.scale.set(sc[0],sc[1],sc[2]);par.add(o);return o;};
+ const cap=(r,l,seg=10)=>new THR.CapsuleGeometry(r,l,4,seg);const sph=(r)=>new THR.SphereGeometry(r,14,10);
+ // barrel torso, deep chest, haunches, shoulders
+ P(cap(0.5,1.25,14),BK,0,1.6,0,inner,PI/2,[1,1,0.82]);P(sph(0.6),BK,0.72,1.55,0,inner,0,[1.05,1.08,0.8]);P(sph(0.62),BK,-0.78,1.68,0,inner,0,[1.1,1.0,0.86]);
+ [-1,1].forEach(z=>{P(sph(0.34),BK,0.62,1.62,z*0.26,inner,0.3,[1.2,1.3,0.6]);P(sph(0.38),BK,-0.86,1.62,z*0.27,inner,0,[1.25,1.2,0.6]);});
+ // armor: chest plate + saddle with gold trim
+ P(new THR.SphereGeometry(0.64,14,8,-0.9,1.8,0.7,1.2),AR,0.74,1.5,0,inner,0,[1.08,1.08,0.84]);P(new THR.TorusGeometry(0.52,0.03,6,20,PI),GD,0.95,1.45,0,inner,-PI/2,[1,1,1.3]).rotation.y=PI/2;
+ P(new THR.BoxGeometry(0.62,0.08,0.86),AR,-0.05,2.1,0);P(new THR.BoxGeometry(0.66,0.03,0.9),GD,-0.05,2.15,0);P(new THR.CylinderGeometry(0.09,0.12,0.18,10),AR,0.25,2.2,0);P(new THR.CylinderGeometry(0.1,0.13,0.14,10),AR,-0.33,2.19,0);
+ // neck: arched & thick (tapered capsules)
+ const neck=new THR.Group();neck.position.set(0.95,1.95,0);inner.add(neck);P(cap(0.3,0.55),BK,0.12,0.25,0,neck,-0.55,[1,1,0.75]);P(cap(0.24,0.45),BK,0.36,0.62,0,neck,-0.25,[1,1,0.72]);P(sph(0.3),BK,0.0,0.0,0,neck,0,[1.2,1,0.8]);
+ // head: skull, tapered muzzle, jaw, nostrils, ears, eyes, gold brow
+ const head=new THR.Group();head.position.set(0.48,0.92,0);neck.add(head);const hd=new THR.Group();hd.rotation.z=-1.05;head.add(hd);
+ P(new THR.CylinderGeometry(0.13,0.21,0.62,12),BK,0,-0.25,0,hd,0,[1,1,0.85]);P(sph(0.22),BK,0,0.02,0,hd,0,[1,1,0.85]);P(sph(0.14),BK,0,-0.56,0,hd,0,[1.05,0.9,0.9]);P(sph(0.13),BK,-0.08,-0.3,0,hd,0,[0.9,1.5,0.85]);
+ [-1,1].forEach(z=>{P(sph(0.035),new THR.MeshBasicMaterial({color:0x05000a}),0.08,-0.62,z*0.07,hd);const ear=P(new THR.ConeGeometry(0.06,0.22,6),BK,0.0,0.24,z*0.09,hd,0.35);ear.rotation.x=z*0.25;
+  const eye=P(new THR.SphereGeometry(0.045,8,6),new THR.MeshBasicMaterial({color:0xd090ff}),0.1,-0.05,z*0.17,hd);const gl=celSprite(orbTex(0xa050ff),0.4,0.4);gl.material.blending=THR.AdditiveBlending;gl.material.depthWrite=false;gl.position.copy(eye.position);hd.add(gl);});
+ P(new THR.BoxGeometry(0.06,0.3,0.3),GD,0.17,-0.05,0,hd);P(new THR.BoxGeometry(0.04,0.42,0.36),AR,0.15,-0.2,0,hd);
+ // legs: upper/lower segments, knees (front) & hocks (rear), fetlocks, hooves
+ const legs=[];const LEG=(x,z,rear,ph)=>{const L=new THR.Group();L.position.set(x,rear?1.45:1.3,z);(rear?g:inner).add(L);
+  if(rear){P(cap(0.2,0.42),BK,0.05,-0.3,0,L,-0.25,[1,1,0.8]);}else{P(cap(0.15,0.38),BK,0,-0.28,0,L,0,[1,1,0.85]);}
+  const k=new THR.Group();k.position.set(rear?-0.12:0,rear?-0.72:-0.62,0);L.add(k);P(sph(rear?0.1:0.09),BK,0,0,0,k);
+  P(cap(0.065,rear?0.4:0.36,8),BK,0,-0.24,0,k);const f=new THR.Group();f.position.y=rear?-0.5:-0.46;k.add(f);P(sph(0.075),BK,0,0,0,f);
+  P(new THR.CylinderGeometry(0.06,0.065,0.12,8),BK,0.02,-0.1,0,f);const hv=P(new THR.CylinderGeometry(0.085,0.11,0.12,10),GD,0.03,-0.2,0,f);
+  const em=celSprite(orbTex(0x9a40ff),0.5,0.5);em.material.blending=THR.AdditiveBlending;em.material.depthWrite=false;em.position.set(0.03,-0.22,0);f.add(em);
+  legs.push({L,lo:k,f,rear,ph});};
+ // 4-beat gallop phases: LH, LF, RH, RF
+ LEG(0.75,0.22,0,0.25);LEG(0.75,-0.22,0,0.75);LEG(-0.85,0.24,1,0);LEG(-0.85,-0.24,1,0.5);
+ // mane & tail: flowing mist strands
+ const mist=[];const strand=(par,pts,n,sz)=>{for(let k=0;k<n;k++){const q=k/(n-1);const a=pts[0].clone().lerp(pts[1],q);const m=celSprite(orbTex(k%2?0x2a1838:0x4a2a68),sz*(1-q*0.4),sz*(1-q*0.4));m.material.depthWrite=false;m.material.opacity=0.8;m.material.color.setHex(0x3a2850);m.position.copy(a);par.add(m);mist.push({m,b:a.clone(),k,q});}};
+ const nm=GQ>=1?6:10;strand(neck,[new V3(-0.1,0.25,0),new V3(0.35,1.0,0)],nm,0.42);strand(neck,[new V3(-0.25,0.2,0),new V3(0.15,0.9,0)],nm,0.32);
+ const tail=new THR.Group();tail.position.set(-1.35,1.85,0);inner.add(tail);P(cap(0.08,0.25),BK,-0.08,-0.05,0,tail,0.9);strand(tail,[new V3(-0.15,-0.1,0),new V3(-0.75,-1.0,0)],GQ>=1?6:10,0.4);
+ g.userData={body,neck,head,legs,mist,tail};g.scale.setScalar(0.95);g.traverse(o=>{if(o.isSprite)o.raycast=()=>{};});return g;}
+function umbraGait(HU,e,sp,amp=1){const cyc=e*sp;HU.legs.forEach(l=>{const a=(cyc/(PI*2)+l.ph)%1*PI*2;const sw=Math.sin(a);
+  if(l.rear){l.L.rotation.z=(-0.15+sw*0.45)*amp;l.lo.rotation.z=Math.max(0,Math.cos(a))*0.9*amp;l.f.rotation.z=-Math.max(0,Math.cos(a))*0.6*amp;}
+  else{l.L.rotation.z=(sw*0.55)*amp;l.lo.rotation.z=-Math.max(0,Math.cos(a))*1.2*amp;l.f.rotation.z=Math.max(0,Math.cos(a))*0.7*amp;}});
+ HU.body.position.y=1.35+Math.abs(Math.sin(cyc))*0.1*amp;HU.body.rotation.z=Math.sin(cyc)*0.05*amp;HU.neck.rotation.z=Math.sin(cyc+0.8)*0.12*amp;HU.tail.rotation.z=0.3+Math.sin(cyc*0.5)*0.15;}
+function umbraRear(HU,q){const r=Math.sin(Math.min(1,q)*PI)*0.75;HU.body.rotation.z=r;HU.neck.rotation.z=-r*0.35;HU.legs.forEach(l=>{if(l.rear){l.L.rotation.z=0.15+r*0.2;l.lo.rotation.z=r*0.3;}else{const w=Math.sin(q*14+(l.ph>0.5?1:0));l.L.rotation.z=r*(0.9+0.3*w);l.lo.rotation.z=-r*1.6;l.f.rotation.z=r*0.6;}});HU.tail.rotation.z=0.3-r*0.4;}
+window.mkUmbra=mkUmbra;window.umbraGait=umbraGait;window.umbraRear=umbraRear;
 CAST.a_ride=function(a,ts,s,T){const t=ts[0];const C=cineStart();C.objs=[];window.__ride={ph:'rear'};B.banner={n:'ASHEN RIDE',t:0,big:1};a.cast=1;
  const R=model(a),hb=home(a),tp=home(t).clone();const fwd=tp.clone().sub(hb).setY(0).normalize();const side=new V3(-fwd.z,0,fwd.x);if(side.z<0)side.negate();const yaw=Math.atan2(-fwd.z,fwd.x);
  const asp=()=>Math.max(0.35,Math.min(2.2,cam.aspect||1.5));const far=k=>k/Math.min(1,asp()*0.85);
@@ -2963,19 +2992,20 @@ CAST.a_ride=function(a,ts,s,T){const t=ts[0];const C=cineStart();C.objs=[];windo
  const dark=celSprite(orbTex(0x05000a),0.9,0.9);dark.position.set(0.5,1.6,0.02);dark.material.opacity=0;glow.add(dark);
  const noRay=o=>o.traverse(x=>{if(x.isSprite)x.raycast=()=>{};});noRay(H);noRay(glow);const tcr=[];let swiped=0,ashed=0,ko=false,mounted=0;
  C.cleanup=()=>{hon=0;hid.forEach(([r,v])=>r.visible=v);others.forEach(([r,v])=>r.visible=v);try{R.scythe.remove(glow);}catch(_){}a.posO=null;a.liftY=0;t.posO=null;if(!(t.hp<=0)){try{model(t).root.visible=true;}catch(_){}}};
- const saddle=()=>H.position.clone().add(new V3(0,1.75,0));
- const gallop=(e,sp)=>{HU.legs.forEach(l=>{const q=Math.sin(e*sp+l.ph);l.L.rotation.z=q*0.6;l.lo.rotation.z=Math.max(0,-q)*0.8;});HU.body.position.y=Math.abs(Math.sin(e*sp))*0.15;};
+ let hipH=null;const saddle=()=>{if(hipH===null){try{hipH=R.hips.getWorldPosition(new V3()).y-R.root.position.y;}catch(_){hipH=0.9;}}const sp=new V3(-0.05,2.15,0);H.updateMatrixWorld(true);HU.body.updateMatrixWorld(true);const w=HU.body.children[0].localToWorld(sp.clone());return w.add(new V3(0,-hipH+0.12,0));};
+ const seat=()=>{try{[R.lL,R.rL].forEach((l,i)=>{if(l&&l.h){l.h.rotation.x=(i?1:-1)*0.75;l.h.rotation.z=0.5;}if(l&&l.k)l.k.rotation.z=-0.6;});}catch(_){}};
+ const gallop=(e,sp)=>umbraGait(HU,e,sp*0.75);const __oldGal=(e,sp)=>{HU.legs.forEach(l=>{const q=Math.sin(e*sp+l.ph);l.L.rotation.z=q*0.6;l.lo.rotation.z=Math.max(0,-q)*0.8;});HU.body.position.y=Math.abs(Math.sin(e*sp))*0.15;};
  const hoof=()=>{if(Math.random()<(GQ>=1?0.25:0.5)){const f=celSprite(flameTex(0x9a40ff,0),0.5,0.7);f.material.blending=THR.AdditiveBlending;f.material.depthWrite=false;f.position.copy(H.position).addScaledVector(side,(Math.random()-0.5)*0.6).setY(0.2);scene.add(f);addFx({mesh:f,life:0.9,max:0.9,up:g2=>{f.material.opacity=g2.life/g2.max;f.position.y+=0.01;}});}};
  const drv=addFx({life:1e9,max:1e9,up:(f,dt)=>{if(window.__ride.ph==='done')return;const e=T.el();window.__ride.el=e;
   HU.mist.forEach(o=>{o.m.position.y=o.b.y+Math.sin(e*4+o.k)*0.06;o.m.position.x=o.b.x-Math.sin(e*3+o.k)*0.1;});
-  if(e<1.2){window.__ride.ph='rear';const q=Math.min(1,e/0.9);crack.material.opacity=0.6*Math.min(1,e*3);cracks.forEach(l=>l.material.opacity=Math.min(1,e*3));H.position.y=-3+3*q*(2-q);HU.body.rotation.z=q>0.6?Math.sin((q-0.6)/0.4*PI)*0.7:0;HU.neck.rotation.z=HU.body.rotation.z*0.4;
+  if(e<1.2){window.__ride.ph='rear';const q=Math.min(1,e/0.9);crack.material.opacity=0.6*Math.min(1,e*3);cracks.forEach(l=>l.material.opacity=Math.min(1,e*3));H.position.y=-3+3*Math.min(1,q*1.4)*(2-Math.min(1,q*1.4));umbraRear(HU,Math.max(0,(e-0.35)/0.85));
    camLook(p0.clone().addScaledVector(side,far(7)).addScaledVector(fwd,1.5).add(new V3(0,0.6,0)),p0.clone().add(new V3(0,1.8,0)),6);}
-  else if(e<1.8){window.__ride.ph='mount';HU.body.rotation.z*=0.85;const q=(e-1.2)/0.6;crack.material.opacity*=0.95;cracks.forEach(l=>l.material.opacity*=0.92);a.posO=hb.clone().lerp(saddle(),q).add(new V3(0,Math.sin(q*PI)*1.6,0));mounted=1;
+  else if(e<1.8){window.__ride.ph='mount';HU.body.rotation.z*=0.85;HU.legs.forEach(l=>{l.L.rotation.z*=0.85;l.lo.rotation.z*=0.85;l.f.rotation.z*=0.85;});HU.neck.rotation.z*=0.85;const q=(e-1.2)/0.6;crack.material.opacity*=0.95;cracks.forEach(l=>l.material.opacity*=0.92);a.posO=hb.clone().lerp(saddle(),q).add(new V3(0,Math.sin(q*PI)*1.6,0));mounted=1;
    camLook(p0.clone().addScaledVector(side,far(8)).add(new V3(0,1.2,0)),p0.clone().add(new V3(0,2,0)),5);}
-  else if(e<2.8){window.__ride.ph='blade';a.posO=saddle();const q=Math.min(1,(e-1.8)/0.6);core.material.opacity=0.9*q;dark.material.opacity=q;core.scale.setScalar(1.6+0.2*Math.sin(e*14));
+  else if(e<2.8){window.__ride.ph='blade';a.posO=saddle();seat();const q=Math.min(1,(e-1.8)/0.6);core.material.opacity=0.9*q;dark.material.opacity=q;core.scale.setScalar(1.6+0.2*Math.sin(e*14));
    if(Math.random()<0.4){const sp=celSprite(orbTex(Math.random()<0.6?0x40f0e0:0xffffff),0.12,0.12);sp.material.blending=THR.AdditiveBlending;sp.material.depthWrite=false;const bp=R.scythe.localToWorld(new V3(0.4+Math.random()*0.6,1.4+Math.random()*0.5,0));sp.position.copy(bp);scene.add(sp);const v=new V3().randomDirection().multiplyScalar(1.5);addFx({mesh:sp,life:0.4,max:0.4,up:(g2,d2)=>{sp.position.addScaledVector(v,d2);sp.material.opacity=g2.life/g2.max;}});}
    const bp=R.scythe.localToWorld(new V3(0.5,1.6,0));camLook(bp.clone().addScaledVector(side,1.4).addScaledVector(fwd,0.4).add(new V3(0,0.2,0)),bp,8);}
-  else if(e<4.3){window.__ride.ph=e<3.65?'gallop':'swipe';const q=(e-2.8)/1.5;const end=tp.clone().addScaledVector(fwd,5).addScaledVector(side,1.4);H.position.lerpVectors(p0,end,q).setY(0);gallop(e,14);hoof();a.posO=saddle();
+  else if(e<4.3){window.__ride.ph=e<3.65?'gallop':'swipe';const q=(e-2.8)/1.5;const end=tp.clone().addScaledVector(fwd,5).addScaledVector(side,1.4);H.position.lerpVectors(p0,end,q).setY(0);gallop(e,14);hoof();a.posO=saddle();seat();
    if(!swiped&&e>=3.65){swiped=1;try{scytheSwing(a,0.5);}catch(_){}HSTOP=0.18;flashA=0.25;CAM.shake=0.5;const arc=celSprite(crescentTex(),3.4,3.4);arc.material.blending=THR.AdditiveBlending;arc.material.depthWrite=false;arc.position.copy(center(t));scene.add(arc);addFx({mesh:arc,life:0.5,max:0.5,up:g2=>{arc.material.opacity=g2.life/g2.max;arc.material.rotation+=0.08;}});
     try{SFX2.slash&&SFX2.slash();}catch(_){}leoHit(a,t,s.p,s.n,{sc:0xd0b0ff,ic:0x8a40ff});ko=t.hp<=0;window.__ride.ko=ko;
     for(let k=0;k<6;k++){const l=new THR.Mesh(new THR.BoxGeometry(0.05,0.9,0.05),new THR.MeshBasicMaterial({color:0xffa060,transparent:true,blending:THR.AdditiveBlending,depthWrite:false}));l.position.copy(center(t)).add(new V3((Math.random()-0.5)*0.8,(Math.random()-0.5)*0.8,(Math.random()-0.5)*0.4).addScaledVector(side,0.5));l.rotation.set(Math.random()*3,Math.random()*3,Math.random()*3);scene.add(l);C.objs.push(l);tcr.push(l);}}
@@ -2988,7 +3018,7 @@ CAST.a_ride=function(a,ts,s,T){const t=ts[0];const C=cineStart();C.objs=[];windo
    if(ashed&&!ko&&e<5.2)t.posO=tp.clone().add(new V3(Math.sin(e*30)*0.06,0,0));if(e>=5.2)t.posO=null;
    camLook(tp.clone().addScaledVector(side,far(6)).add(new V3(0,1,0)),center(t),6);}
   else{window.__ride.ph='return';const q=Math.min(1,(e-5.5)/0.8);tcr.forEach(l=>l.material.opacity*=0.9);const st=tp.clone().addScaledVector(fwd,5).addScaledVector(side,1.4);H.rotation.y=yaw+PI;H.position.lerpVectors(st,hb.clone().addScaledVector(side,0.6),q).setY(0);gallop(e,12);hoof();
-   if(q<0.9)a.posO=saddle();else{a.posO=null;}H.traverse(o=>{if(o.material&&q>0.7){o.material.transparent=true;o.material.opacity=Math.min(o.material.opacity,1-(q-0.7)/0.3);}});
+   if(q<0.9){a.posO=saddle();seat();}else{a.posO=null;}H.traverse(o=>{if(o.material&&q>0.7){o.material.transparent=true;o.material.opacity=Math.min(o.material.opacity,1-(q-0.7)/0.3);}});
    camLook(hb.clone().addScaledVector(side,far(14)).addScaledVector(fwd,3).add(new V3(0,2,0)),hb.clone().lerp(tp,0.4).add(new V3(0,1,0)),4);}}});
  T.at(0.05,()=>{try{bhSfx('rumble');SFX2.explosion&&SFX2.explosion(false);}catch(_){}});
  T.at(0.8,()=>{try{const ac=getAC();const o=ac.createOscillator(),g=ac.createGain();o.type='sawtooth';o.frequency.setValueAtTime(900,ac.currentTime);o.frequency.exponentialRampToValueAtTime(380,ac.currentTime+0.7);g.gain.setValueAtTime(0.08,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.8);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+0.85);}catch(_){}});
