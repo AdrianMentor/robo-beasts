@@ -2709,7 +2709,7 @@ let AUTO=false;window.isAuto=()=>AUTO;
 const autoBtn=document.createElement('button');autoBtn.id='autoBtn';autoBtn.textContent='AUTO ▶';($('view')||document.body).appendChild(autoBtn);
 function setAuto(v){AUTO=v;autoBtn.classList.toggle('on',AUTO);autoBtn.textContent=AUTO?'AUTO ■':'AUTO ▶';if(AUTO&&B){B.autoUsed=1;if(B.cur&&!B.cur.enemy&&!busy&&sceneN==='battle')setTimeout(()=>autoAct(B.cur),200);}}window.setAuto=setAuto;
 autoBtn.onclick=e=>{e.stopPropagation();setAuto(!AUTO);try{SFX.ok();}catch(_){}};
-function autoAct(h){if(!AUTO||!B||sceneN!=='battle'||busy||B.cur!==h||h.enemy)return;const foes=alive(B.en);if(!foes.length)return;
+function autoAct(h){if(!AUTO||!B||sceneN!=='battle'||busy||B.cur!==h||h.enemy)return;const foes=alive(B.en);if(!foes.length)return;if((B.chain||0)>=100&&window.teamFinisher){B.autoUsed=1;return window.teamFinisher(h);}
  // heal a badly hurt ally with an item first
  const hurt=alive(S.party).filter(p=>p.hp<p.mhp*0.3).sort((a,b)=>a.hp/a.mhp-b.hp/b.mhp)[0];
  if(hurt){const ik=Object.keys(ITEMS).find(k=>(S.items[k]||0)>0&&/heal|repair|potion|kit/i.test(ITEMS[k].n+' '+ITEMS[k].d)&&/HP/.test(ITEMS[k].d)&&ITEMS[k].ok(hurt));if(ik)return useItem(h,ik,hurt);}
@@ -3384,7 +3384,7 @@ function counterWindow(h,e){if(CW)return;const until=performance.now()+750;CW={h
  el.textContent='TAP TO COUNTER!';el.style.opacity=1;
  const fire=()=>{if(!CW||CW.done)return;CW.done=1;el.textContent='COUNTER!';setTimeout(()=>{el.style.opacity=0;},350);const c=CW;setTimeout(()=>{try{if(c.e.hp>0&&c.h.hp>0){leoHit(c.h,c.e,0.8,'Counter!',{sc:0x80e0ff,ic:0x40c0ff});SFX.ok&&SFX.ok();}}catch(err){console.warn(err);}},250);};
  const tap=ev=>{if(CW&&performance.now()<=CW.until)fire();};window.addEventListener('pointerdown',tap,{capture:true,once:true});
- if(typeof AUTO!=='undefined'&&AUTO&&Math.random()<0.5)setTimeout(fire,300);
+ if(window.isAuto&&window.isAuto()&&Math.random()<0.5)setTimeout(fire,300);
  setTimeout(()=>{window.removeEventListener('pointerdown',tap,{capture:true});if(CW&&!CW.done)el.style.opacity=0;CW=null;},800);}
 window.__counter=()=>CW;
 // ---- C6 status turn handling ----
@@ -3440,6 +3440,65 @@ const _ov=overlay;overlay=function(dt){_ov.apply(this,arguments);try{if(sceneN!=
   cx.font='7px system-ui';[...B.en,...S.party].forEach(u=>{if(!u||u.hp<=0)return;const ks=Object.keys(ST_IC).filter(k=>u[k]>0);if(!ks.length)return;let m;try{m=model(u);}catch(_){return;}if(!m||!m.root.visible)return;
    const p=proj(m.root.position.clone().add(new V3(0,(m.h||1.6)+0.35,0)));if(p.z>1)return;ks.forEach((k,i)=>{cx.fillText(ST_IC[k][0],p.x+(i-(ks.length-1)/2)*8,p.y);});});
   cx.restore();}catch(e){}};
+})();
+
+</script>
+<script>
+// ===== EXPANSION PHASE 2: elements (C2), break/stagger (C3), boss phases (C7), Copy Core chips (U8), wave variety, AUTO team finisher =====
+(function(){
+const ELS={fire:['FIRE','#ff7040','🔥'],water:['WATER','#40a8ff','💧'],storm:['STORM','#ffe040','⚡'],earth:['EARTH','#90c050','🪨'],light:['LIGHT','#fff0a0','✦'],void:['VOID','#b070ff','◉']};
+const BEATS={water:'fire',fire:'earth',earth:'storm',storm:'water',light:'void',void:'light'};
+function elemName(n){n=String(n||'').toLowerCase();
+ if(/fire|flame|burn|inferno|magma|lava|blaze|ember|solar|sun|pyro|cinder|heat|sundown/.test(n))return 'fire';
+ if(/water|tide|tidal|wave|aqua|reef|frost|ice|cryo|freez|snow|jelly|spout|bubble/.test(n))return 'water';
+ if(/storm|thunder|volt|lightning|spark|shock|wind|gust|aero|static/.test(n))return 'storm';
+ if(/rock|quake|earth|stone|thorn|vine|spore|golem|boulder|crab|crawl|ground|mountain/.test(n))return 'earth';
+ if(/light|holy|star|radiant|prism|halo|nova|dawn|noon/.test(n))return 'light';
+ if(/dark|void|shadow|soul|black hole|orb|hive|doom|ash|reap|night|matter/.test(n))return 'void';return null;}
+const PL_EL=['earth','fire','water','earth','water','fire','storm','void'];
+function elemOfEnemy(e){if(e._el!==undefined)return e._el;let k=(S&&NODES[S.node]&&PL_EL[NODES[S.node].planet])||elemName(e.name+' '+(e.base||''))||null;e._el=k;return k;}
+function elemOfSkill(s){if(!s)return null;if(s.elem)return s.elem;return elemName(s.n);}
+window.elemOfEnemy=elemOfEnemy;window.elemOfSkill=elemOfSkill;
+// ---- shields ----
+function initShield(e){if(e.shM)return;e.shM=e.boss?6:(e.chief||e.elite)?5:3;e.sh=e.shM;}
+const _calc=calc;calc=function(a,t,s){const r=_calc.apply(this,arguments);try{if(!r||r.miss||!B||a.enemy||!t.enemy)return r;initShield(t);
+  const ke=elemOfSkill(s),te=elemOfEnemy(t);const weak=ke&&te&&BEATS[ke]===te;
+  if(weak){r.d=Math.round(r.d*1.5);r.weak=1;if(!t._wk||performance.now()-t._wk>400){t._wk=performance.now();setTimeout(()=>{try{pop(t,'WEAK!',ELS[ke][1],true);}catch(_){}},60);}}
+  if(t.broken>0)r.d=Math.round(r.d*1.5);
+  else{t.sh=Math.max(0,t.sh-(weak?2:1));if(t.sh===0){t.broken=1;setTimeout(()=>{try{pop(t,'BREAK! DIZZY','#ffd040',true);CAM.shake=Math.max(CAM.shake,0.35);log(`${t.name}'s guard is broken!`);}catch(_){}},120);}}
+ }catch(e){console.warn('p2 calc',e);}return r;};
+// ---- boss phases + broken turn skip + phase moves ----
+function bossPhaseCheck(){if(!B||!B.en)return;B.en.forEach(e=>{if(!e.boss||e.hp<=0)return;const r=e.hp/e.mhp;const want=r<=0.25?3:r<=0.5?2:1;if((e.phase||1)<want){e.phase=want;e.atk=Math.round(e.atk*1.2);initShield(e);e.sh=e.shM;e.broken=0;
+  B.banner={n:`${e.name}: PHASE ${want}${want===3?' — LAST STAND!':' — ENRAGED!'}`,t:0,big:1};flashA=0.35;CAM.shake=0.6;try{SFX2.charge();}catch(_){}log(`${e.name} enters phase ${want}!`);}});}
+window.bossPhaseCheck=bossPhaseCheck;
+const _et=endTurn;endTurn=function(){try{bossPhaseCheck();}catch(_){}return _et.apply(this,arguments);};
+const _ea=enemyAct;enemyAct=function(e){if(e.freeze>0||e.sleep>0||e.stun)return _ea.apply(this,arguments);try{initShield(e);if(e.broken>0){e.broken=0;e.sh=e.shM;pop(e,'DIZZY...','#ffd040');log(`${e.name} is dizzy and can't act!`);return setTimeout(endTurn,600);}
+  if(e.boss&&(e.phase||1)>=2&&!e.stun&&!e.freeze&&!e.sleep&&e.turns%2===1){e.turns++;const tg=alive(S.party);if(tg.length){const el=elemOfEnemy(e);return act(e,{n:(e.phase===3?'Final ':'')+(el?ELS[el][0][0]+ELS[el][0].slice(1).toLowerCase()+' ':'')+'Fury',t:'beam',p:e.phase===3?0.8:0.65,en:0,st:'beam',sp:1},tg);}}}catch(err){console.warn(err);}
+ return _ea.apply(this,arguments);};
+// ---- U8 Copy Core boss chips ----
+const CHIPS=[['quake','Quake Core','earth'],['lava','Lava Lob','fire'],['tide','Tide Spout','water'],['thorn','Thorn Volley','earth'],['frost','Frost Lance','water'],['magma','Magma Burst','fire'],['static','Static Arc','storm'],['void','Hive Pulse','void']];
+CHIPS.forEach(([k,n,el])=>{SK['chip_'+k]={n:n+' (Chip)',t:'beam',p:1.6,en:10,form:'any',hero:-1,chip:1,elem:el,st:'beam'};});
+window.COPY_CHIPS=CHIPS;
+const _sf=skillsFor;skillsFor=function(id,form){const r=_sf.apply(this,arguments);try{const h=S&&S.roster&&S.roster.find(x=>x.id===id);if(h&&h.chip&&SK['chip_'+h.chip])r.push('chip_'+h.chip);}catch(_){}return r;};
+const _vic=victory;victory=function(){try{const n=NODES[S.node];if(n&&n.boss){S.chips=S.chips||[];const c=CHIPS[n.planet];if(c&&!S.chips.includes(c[0])){S.chips.push(c[0]);setTimeout(()=>{try{B&&(B.banner={n:'COPY CORE: '+c[1].toUpperCase()+' CHIP!',t:0,big:1});log(`Copied the boss's power: ${c[1]} chip! Equip it from a hero's battle menu.`);}catch(_){}},400);}}}catch(e){console.warn(e);}return _vic.apply(this,arguments);};
+function chipMenu(h){const own=(S.chips||[]);menu([{l:'None <small>unequip</small>',f:()=>{h.chip=null;save&&save();commands(h);}}].concat(own.map(k=>{const c=CHIPS.find(x=>x[0]===k);return {l:`${ELS[c[2]][2]} ${c[1]} <small>${ELS[c[2]][0]}${h.chip===k?' · equipped':''}</small>`,f:()=>{h.chip=k;try{save();}catch(_){}log(`${h.name} equips the ${c[1]} chip.`);commands(h);}};})),()=>commands(h),'COPY CORE · '+h.name);}
+window.chipMenu=chipMenu;
+let inj=null;const _menu=menu;menu=function(items,back,title){if(inj){const h=inj;inj=null;try{if((S.chips||[]).length)items.push({l:`💠 Copy Core <small>${h.chip?(CHIPS.find(x=>x[0]===h.chip)||[0,'?'])[1]:'equip a chip'}</small>`,f:()=>chipMenu(h)});}catch(e){}}return _menu.apply(this,arguments);};
+const _cmd=commands;commands=function(h){inj=h;const r=_cmd.apply(this,arguments);inj=null;return r;};
+// ---- monster families: wave variety + golden variants ----
+const FAM={0:'Vorrex Legion',1:'Elementals',2:'Elementals',3:'Wild Fauna',4:'Elementals',5:'Elementals',6:'Scrap Machines',7:'Vorrex Legion'};
+const _sb=startBattle;startBattle=function(){let n=null,orig=null;try{n=NODES[S.node];if(n&&!n.boss&&!window.NO_WAVE_RANDOM){orig=n.e;const P=PLANETS[n.planet];const pool=[...new Set(P.w.flat())];const lineup=orig.slice();
+   if(Math.random()<0.6){const i=Math.floor(Math.random()*lineup.length);lineup[i]=pool[Math.floor(Math.random()*pool.length)];}
+   if(Math.random()<0.3){lineup.reverse();}n.e=lineup;}}catch(e){console.warn(e);}
+ let r;try{r=_sb.apply(this,arguments);}finally{if(n&&orig)n.e=orig;}
+ try{if(B&&n&&!n.boss){B.family=FAM[n.planet];if(!window.NO_WAVE_RANDOM&&Math.random()<0.06){const g=B.en[Math.floor(Math.random()*B.en.length)];g.golden=1;g.name='Golden '+g.name;g.mhp=Math.round(g.mhp*1.5);g.hp=g.mhp;g.xp=(g.xp||10)*3;try{model(g).root.traverse(o=>{if(o.material&&o.material.color){o.material=o.material.clone();o.material.color.lerp(new THR.Color(0xffd040),0.55);}});}catch(_){}log(`A rare Golden ${g.name.slice(7)} appeared!`);}
+   log(`Enemy family: ${B.family}.`);}B&&B.en.forEach(initShield);}catch(e){console.warn(e);}return r;};
+// ---- overlay: shield pips + element tag above enemies ----
+const _ov=overlay;overlay=function(dt){_ov.apply(this,arguments);try{if(sceneN!=='battle'||!B||CINE)return;cx.save();cx.font='bold 5px system-ui';cx.textAlign='center';
+  B.en.forEach(e=>{if(e.hp<=0)return;initShield(e);let m;try{m=model(e);}catch(_){return;}if(!m||!m.root.visible)return;const p=proj(m.root.position.clone().add(new V3(0,(m.h||1.6)+0.1,0)));if(p.z>1)return;
+   const w=e.shM*5;for(let i=0;i<e.shM;i++){cx.fillStyle=e.broken?'#ffd040':i<e.sh?'#8fe8ff':'rgba(255,255,255,.18)';cx.fillRect(p.x-w/2+i*5,p.y+3,4,2.2);}
+   const el=elemOfEnemy(e);if(el){cx.fillStyle=ELS[el][1];cx.fillText(ELS[el][0],p.x,p.y+10);}if(e.boss&&(e.phase||1)>1){cx.fillStyle='#ff6060';cx.fillText('PHASE '+e.phase,p.x,p.y+16);}});
+  cx.restore();}catch(_){}};
 })();
 
 </script>
