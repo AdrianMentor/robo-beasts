@@ -4078,4 +4078,90 @@ const _map=map;map=function(){const r=_map.apply(this,arguments);G(()=>{if(frame
 })();
 
 </script>
+<script>
+// ===== U6 Alliance Map Battles: optional 6x6 grid battle, once per world for rewards =====
+(function(){
+const N=6,RANGED_IDS=[1,3,6,8];
+let G=null,root=null;
+const css=`#ally{position:fixed;inset:0;z-index:99999;background:radial-gradient(circle at 30% 20%,#18284a,#060a18);display:flex;align-items:center;justify-content:center;gap:12px;font-family:system-ui,sans-serif;color:#eaf6ff;touch-action:manipulation;user-select:none}
+#ally .bd{position:relative;display:grid;grid-template-columns:repeat(6,var(--c));grid-template-rows:repeat(6,var(--c));gap:2px;padding:4px;background:#0a1430;border:2px solid #3ef0ff88;border-radius:10px}
+#ally .cl{border-radius:6px;background:#1c3a2a;display:flex;align-items:center;justify-content:center;font-size:calc(var(--c)*.42);position:relative}
+#ally .cl.alt{background:#20442f}#ally .cl.rock{background:#3a3a46}#ally .cl.forest{background:#1a5a2a}#ally .cl.crys{background:#1a3a5a}
+#ally .cl.mv{box-shadow:inset 0 0 0 3px #3ef0ff;background:#235a6a}#ally .cl.tg{box-shadow:inset 0 0 0 3px #ff5050;background:#5a2a2a}
+#ally .u{position:absolute;width:var(--c);height:var(--c);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .32s ease;pointer-events:none;font-weight:800}
+#ally .u .ic{font-size:calc(var(--c)*.5);line-height:1;filter:drop-shadow(0 2px 2px #000)}#ally .u .nm{font-size:calc(var(--c)*.17);text-shadow:0 1px 2px #000;white-space:nowrap}
+#ally .u .hp{width:80%;height:5px;background:#000a;border-radius:3px;overflow:hidden}#ally .u .hp i{display:block;height:100%;background:#4f8}#ally .u.en .hp i{background:#f64}
+#ally .u.sel{outline:3px solid #ffe060;border-radius:8px}#ally .u.done{opacity:.55}#ally .u.dead{opacity:0;transform:scale(.2)!important}
+#ally .pn{width:min(300px,38vw);display:flex;flex-direction:column;gap:6px}#ally h3{margin:0;color:#3ef0ff;font-size:16px}#ally .lg{background:#0008;border-radius:8px;padding:6px;font-size:12px;min-height:84px;max-height:30vh;overflow:auto}
+#ally button{background:#123;border:2px solid #3ef0ff;color:#eaf6ff;border-radius:8px;padding:9px;font-weight:800;font-size:14px}#ally button:disabled{opacity:.4}
+#ally .pop{position:absolute;font-weight:900;font-size:16px;color:#fff;text-shadow:0 0 3px #000,0 0 6px #000;animation:apop .9s forwards;pointer-events:none;z-index:5}@keyframes apop{to{transform:translateY(-30px);opacity:0}}
+#ally .ban{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:26px;font-weight:900;color:#ffe060;text-shadow:0 0 6px #000,0 0 12px #f80;pointer-events:none;white-space:nowrap;z-index:6}
+@media (orientation:portrait){#ally{flex-direction:column}#ally .pn{width:min(94vw,420px)}}`;
+const rnd=s=>{let x=s;return()=>(x=(x*16807)%2147483647)/2147483647;};
+const key=(x,y)=>x+','+y,dist=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+const at=(x,y)=>G.units.find(u=>u.hp>0&&u.x===x&&u.y===y);
+const terr=(x,y)=>G.map[y][x];
+function reach(u,steps){const seen={[key(u.x,u.y)]:0},q=[[u.x,u.y]],out=[];while(q.length){const [x,y]=q.shift();const d=seen[key(x,y)];if(d>=steps)continue;[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=N||ny>=N)return;const k=key(nx,ny);if(k in seen||terr(nx,ny)==='rock')return;const o=at(nx,ny);if(o&&o.side!==u.side)return;seen[k]=d+1;q.push([nx,ny]);if(!o)out.push({x:nx,y:ny});});}return out;}
+const rangeOf=u=>u.ranged?2:1;
+const targetsOf=u=>G.units.filter(e=>e.hp>0&&e.side!==u.side&&dist(u,e)<=rangeOf(u));
+const allyAdj=u=>G.units.find(o=>o!==u&&o.hp>0&&o.side==='hero'&&!o.blob&&dist(o,u)===1);
+function start(){if(!S)return;const node=NODES[S.node]||NODES[0];const pl=node.planet;const P=PLANETS[pl];const r=rnd(1000+pl*97+(S.allyRuns||0)*13);S.allyRuns=(S.allyRuns||0)+1;
+ const map=[];for(let y=0;y<N;y++){map.push([]);for(let x=0;x<N;x++)map[y].push('');}
+ const free=[];for(let y=0;y<N;y++)for(let x=1;x<N-1;x++)free.push([x,y]);free.sort(()=>r()-0.5);
+ free.slice(0,4).forEach(([x,y])=>map[y][x]='rock');free.slice(4,9).forEach(([x,y])=>map[y][x]='forest');free.slice(9,11).forEach(([x,y])=>map[y][x]='crys');
+ const units=[];const heroes=S.party.filter(h=>h.hp>0).slice(0,3);
+ heroes.forEach((h,i)=>units.push({side:'hero',h,name:h.name,ic:HICON[h.id]||'★',col:HEROES[h.id].col,x:0,y:[1,3,5][i]||i,hp:100,mhp:100,ranged:RANGED_IDS.includes(h.id),mv:3}));
+ if(S.blob&&(S.blobs||[]).includes(S.blob)&&window.BLOBS)units.push({side:'hero',blob:S.blob,name:BLOBS[S.blob].n.split(' ')[0],ic:'🫧',col:'#60b0ff',x:0,y:0,hp:60,mhp:60,mv:3,ranged:false});
+ const pool=[...new Set(P.w.flat())].filter(k=>EN[k]&&!EN[k].boss&&!EN[k].blob);const ys=[0,2,3,5];
+ for(let i=0;i<4;i++){const k=pool[Math.floor(r()*pool.length)];const cap=i===1;units.push({side:'en',k,name:(cap?'★ ':'')+EN[k].n,ic:cap?'👹':'👾',col:'#ff7060',x:N-1,y:ys[i],hp:cap?150:100,mhp:cap?150:100,mv:2,ranged:!!EN[k].beam,cap});}
+ units.forEach(u=>{map[u.y][u.x]='';});
+ G={pl,P,map,units,phase:'hero',sel:null,mode:null,log:[],busy:false,won:false};build();say(`Alliance Battle at ${P.n}! Tap a hero, tap a blue square to move, then tap a red enemy to attack. Heroes side by side do a 🤝 DUO attack (+50%).`);sceneN='alliance';}
+function build(){if(!document.getElementById('allycss')){const s=document.createElement('style');s.id='allycss';s.textContent=css;document.head.appendChild(s);}
+ if(root)root.remove();root=document.createElement('div');root.id='ally';document.body.appendChild(root);
+ const vw=innerWidth,vh=innerHeight,port=vh>vw;const c=Math.floor(Math.min(port?vw*0.94:vh*0.92,port?vh*0.55:vw*0.55)/6)-2;root.style.setProperty('--c',c+'px');G.c=c;
+ root.innerHTML=`<div class="bd"></div><div class="pn"><h3>♟ ALLIANCE BATTLE · ${G.P.n}</h3><div class="ph" style="font-weight:800;color:#ffe060"></div><div class="lg"></div><button class="wt">Wait (end this unit)</button><button class="et">End Turn ▶</button><button class="rt">Retreat</button></div>`;
+ const bd=root.querySelector('.bd');for(let y=0;y<N;y++)for(let x=0;x<N;x++){const d=document.createElement('div');const t=G.map[y][x];d.className='cl '+((x+y)%2?'alt ':'')+(t||'');d.textContent=t==='rock'?'🪨':t==='forest'?'🌲':t==='crys'?'💎':'';d.dataset.x=x;d.dataset.y=y;d.onclick=()=>tap(x,y);bd.appendChild(d);}
+ G.units.forEach(u=>{const e=document.createElement('div');e.className='u '+(u.side==='en'?'en':'');e.innerHTML=`<div class="ic">${u.ic}</div><div class="nm" style="color:${u.col}">${u.name.slice(0,9)}</div><div class="hp"><i></i></div>`;bd.appendChild(e);u.el=e;});
+ root.querySelector('.wt').onclick=()=>{if(G.sel&&!G.busy){G.sel.done=1;G.sel=null;G.mode=null;draw();checkEnd();}};
+ root.querySelector('.et').onclick=()=>{if(!G.busy&&G.phase==='hero')enemyPhase();};root.querySelector('.rt').onclick=()=>close(false,true);draw();}
+function pos(u){return `translate(${4+u.x*(G.c+2)}px,${4+u.y*(G.c+2)}px)`;}
+function draw(){if(!root)return;root.querySelectorAll('.cl').forEach(d=>d.classList.remove('mv','tg'));
+ if(G.sel&&G.mode==='move')reach(G.sel,G.sel.mv).forEach(p=>cell(p.x,p.y).classList.add('mv'));
+ if(G.sel&&(G.mode==='move'||G.mode==='atk'))targetsOf(G.sel).forEach(e=>cell(e.x,e.y).classList.add('tg'));
+ G.units.forEach(u=>{u.el.style.transform=pos(u);u.el.classList.toggle('sel',u===G.sel);u.el.classList.toggle('done',!!u.done&&u.hp>0);u.el.classList.toggle('dead',u.hp<=0);u.el.querySelector('.hp i').style.width=Math.max(0,u.hp/u.mhp*100)+'%';});
+ root.querySelector('.ph').textContent=G.won?'VICTORY!':G.phase==='hero'?'YOUR TURN':'ENEMY TURN';root.querySelector('.lg').innerHTML=G.log.slice(-6).join('<br>');}
+const cell=(x,y)=>root.querySelector(`.cl[data-x="${x}"][data-y="${y}"]`);
+function say(t){G.log.push(t);draw();}
+function popAt(u,t,c){const p=document.createElement('div');p.className='pop';p.style.left=(8+u.x*(G.c+2))+'px';p.style.top=(4+u.y*(G.c+2))+'px';p.style.color=c||'#fff';p.textContent=t;root.querySelector('.bd').appendChild(p);setTimeout(()=>p.remove(),950);}
+function banner(t){const b=document.createElement('div');b.className='ban';b.textContent=t;root.querySelector('.bd').appendChild(b);setTimeout(()=>b.remove(),1100);}
+function hit(a,t){const duo=a.side==='hero'&&!a.blob&&allyAdj(a);let d=a.side==='hero'?(a.blob?15:a.ranged?26:34):(a.cap?22:17);d*=0.9+Math.random()*0.2;if(duo)d*=1.5;const cr=Math.random()<0.15;if(cr)d*=1.5;if(terr(t.x,t.y)==='forest')d*=0.7;d=Math.round(d);
+ t.hp=Math.max(0,t.hp-d);popAt(t,(cr?'CRIT ':'')+d,a.side==='hero'?'#ffe060':'#ff8080');try{SFX2.hit(cr);}catch(_){}
+ if(duo){banner('🤝 DUO ATTACK!');say(`🤝 ${a.name} and ${duo.name} team up on ${t.name} for ${d}!`);}else say(`${a.name} hits ${t.name} for ${d}${terr(t.x,t.y)==='forest'?' (forest cover)':''}.`);
+ if(t.hp<=0)say(`${t.name} is out of the fight!`);draw();}
+function tap(x,y){if(!G||G.busy||G.won||G.phase!=='hero')return;const u=at(x,y);
+ if(u&&u.side==='hero'&&!u.done){G.sel=u;G.mode='move';draw();return;}
+ if(G.sel&&u&&u.side==='en'&&dist(G.sel,u)<=rangeOf(G.sel)){const a=G.sel;hit(a,u);if(a.blob==='blue'){}a.done=1;G.sel=null;G.mode=null;draw();checkEnd();return;}
+ if(G.sel&&G.mode==='move'&&!u&&reach(G.sel,G.sel.mv).some(p=>p.x===x&&p.y===y)){const a=G.sel;a.x=x;a.y=y;
+  if(terr(x,y)==='crys'){G.map[y][x]='';cell(x,y).className='cl '+((x+y)%2?'alt':'');cell(x,y).textContent='';a.hp=Math.min(a.mhp,a.hp+25);popAt(a,'+25','#4f8');say(`${a.name} picks up a power crystal: +25 HP!`);}
+  if(a.blob==='blue'){G.units.filter(o=>o.side==='hero'&&o.hp>0&&dist(o,a)===1).forEach(o=>{o.hp=Math.min(o.mhp,o.hp+20);popAt(o,'+20','#4f8');});}
+  G.mode='atk';draw();if(!targetsOf(a).length){a.done=1;G.sel=null;G.mode=null;draw();checkEnd();}return;}}
+function checkEnd(){const eh=G.units.filter(u=>u.side==='en'&&u.hp>0),hh=G.units.filter(u=>u.side==='hero'&&u.hp>0);
+ if(!eh.length){G.won=true;banner('VICTORY!');setTimeout(()=>close(true),1300);return true;}if(!hh.length){banner('RETREAT...');say('The squad pulls back to regroup. No harm done: try again any time!');setTimeout(()=>close(false),1500);return true;}
+ if(G.phase==='hero'&&!hh.some(u=>!u.done)){setTimeout(enemyPhase,350);}return false;}
+function enemyPhase(){if(G.won)return;G.phase='enemy';G.sel=null;G.mode=null;G.busy=true;draw();const es=G.units.filter(u=>u.side==='en'&&u.hp>0);let i=0;
+ const step=()=>{if(!G||G.won)return;if(i>=es.length){G.units.forEach(u=>u.done=0);G.phase='hero';G.busy=false;say('— Your turn —');draw();checkEnd();return;}const e=es[i++];if(e.hp<=0)return step();
+  const hs=G.units.filter(u=>u.side==='hero'&&u.hp>0);if(!hs.length)return checkEnd();
+  if(!targetsOf(e).length){const opts=reach(e,e.mv);let best=null,bd=1e9;opts.forEach(p=>{const d=Math.min(...hs.map(h=>dist(p,h)));if(d<bd){bd=d;best=p;}});if(best&&bd<Math.min(...hs.map(h=>dist(e,h)))){e.x=best.x;e.y=best.y;draw();}}
+  setTimeout(()=>{const ts=targetsOf(e);if(ts.length){const t=ts.sort((a,b)=>a.hp-b.hp)[0];hit(e,t);}if(checkEnd()){return;}setTimeout(step,380);},380);};
+ setTimeout(step,300);}
+function close(won,retreat){const pl=G?G.pl:0;try{if(root)root.remove();}catch(_){}root=null;
+ if(won){S.alliance=S.alliance||{};const first=!S.alliance[pl];S.alliance[pl]=1;if(first){const c=40+pl*12;S.coins=(S.coins||0)+c;S.party.forEach(h=>{h.xp=(h.xp||0)+20+pl*3;});let m=`Alliance victory at ${G.P.n}! +${c} Big Coin, +${20+pl*3} XP each`;if(Math.random()<0.6){try{const gid=rollGear(false);giveGear(gid,'alliance battle');m+=', gear: '+GEAR[gid].n;}catch(_){}}log(m+'!');}else log(`Alliance victory at ${G.P.n}! (Rewards already claimed for this world.)`);try{SFX.win();}catch(_){}}
+ else if(retreat)log('Retreated from the Alliance Battle.');
+ G=null;try{save();}catch(_){}sceneN='map';map();}
+window.ALLY={start,tap,get G(){return G;},enemyPhase,close,reach,targetsOf};
+const _map=map;map=function(){const r=_map.apply(this,arguments);try{if(M&&M.items&&!M.items.some(i=>/Alliance Battle/.test(i.l||''))){const pl=NODES[S.node]?NODES[S.node].planet:0;const done=(S.alliance||{})[pl];const i=M.items.findIndex(x=>/Questboard/.test(x.l||''));
+  M.items.splice(i>=0?i+1:M.items.length,0,{l:`♟ Alliance Battle <small>${done?'cleared · replay for fun':'6×6 grid · bonus rewards'}</small>`,f:start});drawMenu();}}catch(e){console.warn(e);}return r;};
+})();
+
+</script>
 <script>if("serviceWorker" in navigator&&location.protocol!=="file:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script></body></html>
