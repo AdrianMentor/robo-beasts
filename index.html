@@ -932,7 +932,36 @@ const PLANETS=[
  {n:'Ignis',w:[['emberbat','magmacrawl','emberbat'],['magmacrawl','flameturret','emberbat'],['flameturret','magmacrawl','flameturret']],b:['emberbat','magmatitan','emberbat']},
  {n:'Nebula Ring',w:[['drone','turret','drone'],['golem','bat','turret'],['golem','turret','golem']],b:['drone','boss','drone']},
  {n:'Vorrex Hive',w:[['hivebrawl','hiveblast','hivebrawl'],['hiveblast','hivebrawl','hiveblast'],['hivebrawl','hivebrawl','hiveblast']],b:['hiveblast','vqueen','hivebrawl']}];
-const NODES=[];PLANETS.forEach((P,pi)=>{P.w.forEach((e,wi)=>NODES.push({n:`${P.n} · Wave ${wi+1}/3`,e,planet:pi,wave:wi+1,x:26+pi*47,y:60+wi*34}));NODES.push({n:`${P.n} · BOSS`,e:P.b,planet:pi,wave:0,boss:1,x:26+pi*47,y:172});});
+// ===== PHASE 3b: Act 2 worlds W1-W10 (data; inserted before NODES) =====
+(function(){
+const M=(n,base,tint,hp,atk,def,spd,eva,xp,el,x)=>Object.assign({n,base,tint,hp,atk,def,spd,eva,xp,el,coin:8},x||{});
+Object.assign(EN,{
+ cindermoth:M('Cinder Moth','gustkite',0x6a4a3a,40,13,4,15,0.2,13,'fire'),ashstalker:M('Ash Stalker','cograt',0x5a5048,48,14,6,12,0.12,13,'fire'),
+ lumeneel:M('Lumen Eel','tidewisp',0x50fff0,40,13,4,14,0.15,13,'water'),pearlcrab:M('Pearl Crab','crawler',0xf4ecff,58,13,10,6,0.05,14,'water'),
+ volthawk:M('Volt Hawk','bat',0xffe040,40,15,3,18,0.25,14,'storm'),
+ echotoad:M('Echo Toad','pebblebrute',0x4a9a90,62,14,9,7,0.05,15,'void'),mirrorwisp:M('Mirror Wisp','nullsprite',0xd8f4ff,42,15,4,15,0.2,15,'void'),
+ rivetgolem:M('Rivet Golem','golem',0x8a7a60,80,16,11,5,0,17,'earth'),
+ gumdropslime:M('Gumdrop Slime','pollenpuff',0xff60c0,54,14,6,9,0.08,16,'light'),taffysnake:M('Taffy Snake','crawler',0xff9ad8,56,15,7,10,0.08,16,'light'),
+ icewolf:M('Ice Wolf','cograt',0xcfeeff,58,17,6,14,0.12,17,'water',{scl:1.3}),snowmole:M('Snow Mole','pebblebrute',0xffffff,66,16,10,7,0.05,17,'water'),
+ inksquid:M('Ink Squid','tidewisp',0x3a3060,56,17,6,13,0.15,18,'void'),pagephantom:M('Page Phantom','nullsprite',0xf0e8c8,52,18,5,15,0.2,18,'void'),
+ shardscorpion:M('Shard Scorpion','crawler',0x90f0ff,64,18,10,8,0.06,19,'light'),glasshawk:M('Glass Hawk','gustkite',0xd8ffff,52,18,5,17,0.22,19,'light'),
+ scrappirate:M('Scrap Pirate','vbrawl',0x8a5a30,68,19,9,10,0.08,20,'storm'),junkdrone:M('Junk Drone','drone',0x9a7a50,54,18,6,13,0.12,20,'storm')});
+const BO=(n,base,tint,scl,i,el)=>({n,base,tint,scl,hp:1000+i*130,atk:28+i*2,def:14+i,spd:9+(i%3),eva:0.04,xp:130+i*15,coin:90+i*10,beam:1,boss:1,el});
+Object.assign(EN,{kilncolossus:BO('KILN COLOSSUS','golem',0xa04a20,1.5,0,'fire'),pearlmaw:BO('GRAND PEARLMAW','boss',0xe8e0ff,1.2,1,'water'),
+ stormroc:BO('STORMCROWN ROC','bat',0xffd030,2.4,2,'storm'),twinreflect:BO('THE TWIN REFLECTION','vchief',0xc0e8ff,1.2,3,'void'),
+ foreman9:BO('FOREMAN UNIT 9','golem',0xd0a020,1.55,4,'earth'),sugarbaron:BO('SUGAR BARON','vchief',0xff80c0,1.3,5,'light'),
+ avyeti:BO('AVALANCHE YETI','golem',0xf0f8ff,1.6,6,'water'),libwyrm:BO('THE LIBRARIAN WYRM','boss',0x6a4aa0,1.25,7,'void'),
+ prismsphinx:BO('PRISMATIC SPHINX','boss',0xffd0ff,1.25,8,'light'),crankhook:BO('CAPTAIN CRANKHOOK','vchief',0xa06030,1.35,9,'storm')});
+const W=(n,a,b,c,boss)=>({n,act:2,w:[[a,b,a],[b,c,a],[c,a,b]],b:[a,boss,b]});
+PLANETS.push(W('Ashveil','cindermoth','ashstalker','emberimp','kilncolossus'),W('Glimmerreef','lumeneel','pearlcrab','tidewisp','pearlmaw'),
+ W('Thundervale','volthawk','sparkram','gustkite','stormroc'),W('Mirrormarsh','echotoad','mirrorwisp','nullsprite','twinreflect'),
+ W('Gearhollow','cograt','rivetgolem','shielddrone','foreman9'),W('Candyspire','gumdropslime','taffysnake','pollenpuff','sugarbaron'),
+ W('Frostfang Peaks','icewolf','snowmole','tidewisp','avyeti'),W('Sunken Archive','inksquid','pagephantom','nullsprite','libwyrm'),
+ W('Prism Desert','shardscorpion','glasshawk','hivescout','prismsphinx'),W('Rustport','scrappirate','junkdrone','cograt','crankhook'));
+})();
+
+const NX=pi=>pi<8?26+pi*47:20+(pi-8)*40;
+const NODES=[];PLANETS.forEach((P,pi)=>{P.w.forEach((e,wi)=>NODES.push({n:`${P.n} · Wave ${wi+1}/3`,e,planet:pi,wave:wi+1,x:NX(pi),y:60+wi*34}));NODES.push({n:`${P.n} · BOSS`,e:P.b,planet:pi,wave:0,boss:1,x:NX(pi),y:172});});
 // ---------- STATE ----------
 let S=null,sceneN='title',B=null,busy=false,CI=null,flashA=0,combo=null,clock=0;const fx3=[],nums=[];
 function mkHero(i){const h=HEROES[i];return {id:i,name:h.name,lvl:1,xp:0,mhp:h.hp,hp:h.hp,men:h.en,en:h.en,atk:h.atk,def:h.def,spd:h.spd,form:'human',cp:0};}
@@ -1166,7 +1195,7 @@ function victory(){busy=false;sceneN='victory';B.cur=null;const xp=B.en.reduce((
  else{S.party.forEach(h=>{h.en=Math.min(h.men,h.en+5);});}
  save();drawParty();$('menu').innerHTML='<h4>'+ttl+'</h4><div class="it">Tap / Esc to skip</div>';busy=true;const hero=(B.lastKill&&B.lastKill.hp>0?B.lastKill:null)||S.party.find(x=>x.hp>0);
  const newAce=cur.boss&&cur.planet===ACE_UNLOCK_PLANET&&!(S.unlocked&&S.unlocked.ace);if(newAce){S.unlocked=Object.assign({},S.unlocked,{ace:1});save();}const newDuo=cur.boss&&cur.planet===0&&!(S.unlocked&&S.unlocked.duo);if(newDuo){S.unlocked=Object.assign({},S.unlocked,{duo:1});save();}
- celebrate(hero,()=>thanksCut(()=>(newDuo?duoUnlockCut:newAce?aceUnlockCut:(f=>f()))(()=>{busy=false;showHeroes(true);[...S.party].forEach(u=>{u.posO=null;});if(cur.boss&&!window.SKIP_STORY){returnToShip(cur.planet);return;}menu([{l:cur.boss?'Travel ▶':'Next Wave ▶',f:cur.boss?map:startBattle},{l:'Shop',f:()=>shopMenu(map)},{l:'Hangar',f:map}],null,ttl);})));}
+ celebrate(hero,()=>thanksCut(()=>(newDuo?duoUnlockCut:newAce?aceUnlockCut:(f=>f()))(()=>{busy=false;showHeroes(true);[...S.party].forEach(u=>{u.posO=null;});if(cur.boss&&!window.SKIP_STORY){if(cur.planet===7){storyEnding(()=>returnToShip(7));return;}returnToShip(cur.planet);return;}menu([{l:cur.boss?'Travel ▶':'Next Wave ▶',f:cur.boss?map:startBattle},{l:'Shop',f:()=>shopMenu(map)},{l:'Hangar',f:map}],null,ttl);})));}
 function gameOver(){busy=false;sceneN='over';SFX.lose();log('Your squad has been scrapped...');menu([{l:'Retry Battle',f:()=>{const sv=load();if(sv)S=sv;S.party.forEach(h=>{h.hp=h.mhp;h.en=h.men;});startBattle();}},{l:'Title Screen',f:title}],null,'GAME OVER');}
 // ---------- OVERLAY 2D ----------
 function proj(v){const p=v.clone().project(cam);return{x:(p.x+1)/2*400,y:(1-p.y)/2*220,z:p.z};}
@@ -1177,8 +1206,8 @@ function overlay(dt){cx.setTransform(2.4,0,0,2.4,0,0);cx.clearRect(0,0,400,220);
  if(sceneN==='title'){const g=cx.createLinearGradient(0,0,0,70);g.addColorStop(0,'rgba(0,0,10,.75)');g.addColorStop(1,'rgba(0,0,10,0)');cx.fillStyle=g;cx.fillRect(0,0,400,70);grad('ROBO BEASTS',200,38,30,'center');
   txt('STARFALL DEFENDERS  ·  HUMAN · BEAST · ROBOT',200,52,'#3ef0ff',7);txt('Arrows + Enter/Space · Esc back · M mute · Mouse/touch OK',200,212,'#cde',7);return;}
  if(sceneN==='map'){cx.fillStyle='rgba(2,6,20,.72)';cx.fillRect(0,0,400,220);txt('TACTICAL MAP',14,20,'#3ef0ff',10,'left');txt('NEXT: '+NODES[S.node].n.toUpperCase(),386,20,'#ffe060',9,'right');
-  cx.strokeStyle='#3ef0ff88';cx.setLineDash([3,3]);cx.lineWidth=1;cx.beginPath();NODES.forEach((n,i)=>i?cx.lineTo(n.x,n.y):cx.moveTo(n.x,n.y));cx.stroke();cx.setLineDash([]);
-  NODES.forEach((n,i)=>{const c=i<S.node?'#3f8':i===S.node?'#ffcc33':'#567';cx.save();cx.translate(n.x,n.y);cx.rotate(0.785);cx.fillStyle=c;const z=i===S.node?5+Math.sin(clock*6):4;cx.fillRect(-z,-z,2*z,2*z);cx.restore();txt(n.boss?'☠ BOSS':'W'+n.wave,n.x,n.y+12,n.boss?'#f66':'#cde',5);});PLANETS.forEach((P,pi)=>txt(P.n,30+pi*56,44,NODES[S.node].planet===pi?'#ffe060':'#9ab',6));return;}
+  cx.strokeStyle='#3ef0ff88';cx.setLineDash([3,3]);cx.lineWidth=1;const pg=NODES[S.node].planet<8?0:1,onP=n=>(n.planet<8?0:1)===pg;txt(pg?'ACT 2 · BEYOND THE FRONTIER':'ACT 1 · THE VORREX WAR',14,31,pg?'#ff9ad8':'#9ab',6,'left');cx.beginPath();let f0=1;NODES.forEach(n=>{if(!onP(n))return;f0?cx.moveTo(n.x,n.y):cx.lineTo(n.x,n.y);f0=0;});cx.stroke();cx.setLineDash([]);
+  NODES.forEach((n,i)=>{if(!onP(n))return;const c=i<S.node?'#3f8':i===S.node?'#ffcc33':'#567';cx.save();cx.translate(n.x,n.y);cx.rotate(0.785);cx.fillStyle=c;const z=i===S.node?5+Math.sin(clock*6):4;cx.fillRect(-z,-z,2*z,2*z);cx.restore();txt(n.boss?'☠ BOSS':'W'+n.wave,n.x,n.y+12,n.boss?'#f66':'#cde',5);});PLANETS.forEach((P,pi)=>{if((pi<8?0:1)!==pg)return;if(pi<8)txt(P.n,30+pi*56,44,NODES[S.node].planet===pi?'#ffe060':'#9ab',6);else txt(P.n,NX(pi),pi%2?50:42,NODES[S.node].planet===pi?'#ffe060':'#9ab',5);});return;}
  if(!B)return;
  if(!CI){B.en.forEach(u=>{if(u.hp<=0)return;const m=model(u);const p=proj(m.root.position.clone().add(new V3(0,m.h+0.25,0)));const w=34;cx.fillStyle='#000c';cx.fillRect(p.x-w/2-1,p.y-1,w+2,5);
    const hg=cx.createLinearGradient(p.x-w/2,0,p.x+w/2,0);hg.addColorStop(0,'#f30');hg.addColorStop(1,'#fa4');cx.fillStyle=hg;cx.fillRect(p.x-w/2,p.y,w*u.hp/u.mhp,3);txt((u.burn?'🔥'+u.burn+' ':'')+u.name,p.x,p.y-3,u.burn?'#ffb070':'#fcc',6);
@@ -1193,7 +1222,7 @@ function overlay(dt){cx.setTransform(2.4,0,0,2.4,0,0);cx.clearRect(0,0,400,220);
  if(CI)drawCI(dt);
  if(flashA>0){cx.fillStyle=`rgba(255,255,255,${flashA})`;cx.fillRect(0,0,400,220);flashA-=dt*2;}
  if((sceneN==='victory'&&!CUT)||sceneN==='ending'){cx.fillStyle='rgba(0,8,20,.7)';cx.fillRect(0,55,400,100);cx.fillStyle='#3ef0ff';cx.fillRect(0,55,400,1);cx.fillRect(0,154,400,1);
-  grad(sceneN==='ending'?'VORREX QUEEN DEFEATED!':'MISSION COMPLETE',200,84,20,'center');(B.vmsg||[]).forEach((m,i)=>txt(m,200,102+i*12,'#fff',8));}
+  grad(sceneN==='ending'?'ACT 2 COMPLETE!':'MISSION COMPLETE',200,84,20,'center');(B.vmsg||[]).forEach((m,i)=>txt(m,200,102+i*12,'#fff',8));}
  if(sceneN==='over'){cx.fillStyle='rgba(20,0,0,.75)';cx.fillRect(0,0,400,220);txt('GAME OVER',200,105,'#ff4040',30,'center','italic');txt('The Starfall Defenders have fallen...',200,125,'#ccc',9);}}
 function drawCI(dt){const c=CI,t=c.t,k=t/c.dur,u=c.u,hero=!u.enemy,col=hero?HEROES[u.id].col:'#20ffe0';
  const v=cx.createRadialGradient(200,110,60,200,110,240);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,20,.85)');cx.fillStyle=v;cx.fillRect(0,0,400,220);
@@ -2482,9 +2511,9 @@ function returnLines(pi){const nx=pi+1;const ban=(BANTER[pi]||BANTER[0]).filter(
  {cam:[60,25,110,10,4,0],who:'VESTA',t:`Welcome back aboard. ${pName(pi)} reports zero Vorrex signatures. Outstanding work.`},
  {set:'bridge',fx:S_=>{S_.cur.setPlanet(pi);S_.cur.holo(null);},cam:[0,3.0,9.5,0,1.3,0],snap:1,cap:'BRIDGE',nofocus:1,who:S.sel[0],t:`${pName(pi)} is free. That\'s one more world that gets to sleep tonight.`},
  ...ban.map(([w,t],i)=>({who:w,t})),
- {fx:S_=>{S_.cur.holo('ORIN');S_.cur.setPlanet(Math.min(nx,7));},cam:[1.2,2.4,5.5,0,1.7,1.2],who:'ORIN',t:nx<PLANETS.length?`The Council saw everything. Earth is proud of you. Rest, then set course for ${pName(nx)}. They need you.`:'The Council saw everything.'},
+ {fx:S_=>{S_.cur.holo('ORIN');S_.cur.setPlanet(Math.min(nx,PLCOL.length-1));},cam:[1.2,2.4,5.5,0,1.7,1.2],who:'ORIN',t:nx<PLANETS.length?`The Council saw everything. Earth is proud of you. Rest, then set course for ${pName(nx)}. They need you.`:'The Council saw everything.'},
  {fx:S_=>S_.cur.holo(null),cam:[0,3.0,9.5,0,1.3,0],who:'VESTA',t:'Bridge systems are open. Party, Equip, Shop and Story are available from the war room.'}];}
-function endingLines(){return[
+function endingLines(){if(S&&S.node<NODES.length-1)return act1End();if(S&&NODES[S.node]&&NODES[S.node].planet>=8)return act2End();return[
  {set:'space',fx:S_=>{setPlanetCol(S_.cur.pl,0x3a7ad8);},cam:[150,45,170,-10,5,0],snap:1,cap:'THE VORREX QUEEN HAS FALLEN',capms:3500,t:'',wait:3},
  {cam:[60,25,110,10,4,0],who:'VESTA',t:'All Vorrex signals are fading across the frontier. Setting course for home. Setting course for Earth.'},
  {set:'earth',fx:S_=>{S_.cur.crowd.visible=true;S_.cur.fw=1;},cam:[-140,50,180,0,60,-100],snap:1,cap:'HOME',who:'NAR',t:'Earth greets the Starfall Titan with every light in every city.'},
@@ -2494,11 +2523,27 @@ function endingLines(){return[
  {who:5,t:'...Fine. One slice. Then I return to the shadows.'},
  {who:'SERA',t:'Cake approved. Fleet-wide.'},
  {set:'earth',fx:S_=>{S_.cur.crowd.visible=true;S_.cur.fw=1;},cam:[60,30,260,0,140,-200],snap:1,cap:'THE END · THANK YOU FOR PLAYING',capms:5000,t:'',wait:5}];}
+function act1End(){return[
+ {set:'space',fx:S_=>{setPlanetCol(S_.cur.pl,0x3a7ad8);},cam:[150,45,170,-10,5,0],snap:1,cap:'THE VORREX QUEEN HAS FALLEN',capms:3500,t:'',wait:3},
+ {cam:[60,25,110,10,4,0],who:'VESTA',t:'All Vorrex signals are fading across the frontier. Earth is cheering for you right now.'},
+ {set:'council',cam:[0,3.2,8.5,0,1.3,0],snap:1,who:'ORIN',t:'Eight worlds saved. Thank you, all of you. But before you rest... there is something else.'},
+ {who:'SERA',t:'The Queen\'s hive was sending signals out past the old frontier. Ten worlds we have never charted. And something answered.'},
+ {who:S.sel[0],t:'Then we go and see who picked up the phone.'},
+ {who:4,t:'*giggles* Space road trip!'},
+ {set:'earth',fx:S_=>{S_.cur.enter();},cam:[60,30,260,0,140,-200],snap:1,cap:'END OF ACT 1 · ACT 2: BEYOND THE FRONTIER',capms:4500,t:'',wait:4.5}];}
+function act2End(){return[
+ {set:'space',fx:S_=>{setPlanetCol(S_.cur.pl,0xa06030);},cam:[150,45,170,-10,5,0],snap:1,cap:'RUSTPORT IS FREE',capms:3500,t:'',wait:3},
+ {cam:[60,25,110,10,4,0],who:'VESTA',t:'Ship module installed. Ten new worlds are safe, and the Titan can fly farther than ever.'},
+ {set:'council',cam:[0,3.2,8.5,0,1.3,0],snap:1,who:'ORIN',t:'The pages from the Sunken Archive point even deeper into space. Whoever sent the Queen is still out there.'},
+ {who:S.sel[0],t:'Then we will be ready. Together.'},
+ {who:4,t:'*happy giggle* More cake first?'},
+ {who:'SERA',t:'Cake approved. Again.'},
+ {set:'earth',fx:S_=>{S_.cur.crowd.visible=true;S_.cur.fw=1;},cam:[60,30,260,0,140,-200],snap:1,cap:'END OF ACT 2 · TO BE CONTINUED',capms:5000,t:'',wait:5}];}
 function storyIntro(done){stSave('intro');if(S){S.brief=S.brief||{};S.brief[0]=1;}playStory(introLines(),done);}
 function storyBrief(i,done){if(S){S.brief=S.brief||{};S.brief[i]=1;save();}playStory(briefLines(i),done);}
 function returnToShip(pi,done){stSave('ret'+pi);playStory(returnLines(pi),done||bridgeHub);}
 function storyEnding(done){stSave('ending');playStory(endingLines(),done||title);}
-function storyMenu(back){const s=stSeen();const it=[{l:'Prologue: The Council\'s Call',f:()=>storyIntro(()=>storyMenu(back))}];for(let i=0;i<8;i++){it.push({l:`Briefing: ${pName(i)}`,dis:!(S&&(S.brief||{})[i])&&!s['ret'+(i-1)]&&i>0,f:()=>playStory(briefLines(i),()=>storyMenu(back))});if(i<7)it.push({l:`Return from ${pName(i)}`,dis:!s['ret'+i],f:()=>playStory(returnLines(i),()=>storyMenu(back))});}it.push({l:'Epilogue: Homecoming',dis:!s.ending,f:()=>storyEnding(()=>storyMenu(back))});
+function storyMenu(back){const s=stSeen();const it=[{l:'Prologue: The Council\'s Call',f:()=>storyIntro(()=>storyMenu(back))}];for(let i=0;i<PLANETS.length;i++){it.push({l:`Briefing: ${pName(i)}`,dis:!(S&&(S.brief||{})[i])&&!s['ret'+(i-1)]&&i>0,f:()=>playStory(briefLines(i),()=>storyMenu(back))});if(i<PLANETS.length-1)it.push({l:`Return from ${pName(i)}`,dis:!s['ret'+i],f:()=>playStory(returnLines(i),()=>storyMenu(back))});}it.push({l:'Epilogue: Homecoming',dis:!s.ending,f:()=>storyEnding(()=>storyMenu(back))});
  if(sceneN==='hub'||sceneN==='story')stClose();menu(it,()=>{back();},'STORY REPLAY');}
 // ---------- bridge hub ----------
 function bridgeHub(){stOpen(false);sceneN='hub';STORY.prevScene='hub';const g=stSet('bridge');g.enter();const pi=NODES[S.node]?NODES[S.node].planet:0;g.setPlanet(pi);g.holo(null);stCam([0,3.4,10.5,0,1.3,0],2,1);STORY.speaker=null;busy=false;drawParty();
@@ -3486,7 +3531,7 @@ window.chipMenu=chipMenu;
 let inj=null;const _menu=menu;menu=function(items,back,title){if(inj){const h=inj;inj=null;try{if((S.chips||[]).length)items.push({l:`💠 Copy Core <small>${h.chip?(CHIPS.find(x=>x[0]===h.chip)||[0,'?'])[1]:'equip a chip'}</small>`,f:()=>chipMenu(h)});}catch(e){}}return _menu.apply(this,arguments);};
 const _cmd=commands;commands=function(h){inj=h;const r=_cmd.apply(this,arguments);inj=null;return r;};
 // ---- monster families: wave variety + golden variants ----
-const FAM={0:'Vorrex Legion',1:'Elementals',2:'Elementals',3:'Wild Fauna',4:'Elementals',5:'Elementals',6:'Scrap Machines',7:'Vorrex Legion'};
+const FAM={0:'Vorrex Legion',1:'Elementals',2:'Elementals',3:'Wild Fauna',4:'Elementals',5:'Elementals',6:'Scrap Machines',7:'Vorrex Legion'};window.PL_EL=PL_EL;window.FAM=FAM;
 const _sb=startBattle;startBattle=function(){let n=null,orig=null;try{n=NODES[S.node];if(n&&!n.boss&&!window.NO_WAVE_RANDOM){orig=n.e;const P=PLANETS[n.planet];const pool=[...new Set(P.w.flat())];const lineup=orig.slice();
    if(Math.random()<0.6){const i=Math.floor(Math.random()*lineup.length);lineup[i]=pool[Math.floor(Math.random()*pool.length)];}
    if(Math.random()<0.3){lineup.reverse();}n.e=lineup;}}catch(e){console.warn(e);}
@@ -3536,6 +3581,51 @@ const XP={0:['hivescout','shielddrone'],1:['emberimp','pebblebrute'],2:['tidewis
 window.WORLD_EXTRA=XP;
 const _sb=startBattle;startBattle=function(){let n=null,orig=null;try{n=NODES[S.node];if(n&&!n.boss&&!window.NO_WAVE_RANDOM&&XP[n.planet]){orig=n.e;const L=orig.slice();const k=Math.random()<0.55?1+Math.floor(Math.random()*2):0;for(let j=0;j<k;j++){const i=Math.floor(Math.random()*L.length);L[i]=XP[n.planet][Math.floor(Math.random()*XP[n.planet].length)];}n.e=L;}}catch(e){console.warn(e);}
  try{return _sb.apply(this,arguments);}finally{if(n&&orig)n.e=orig;}};
+})();
+
+</script>
+<script>
+// ===== PHASE 3b: Act 2 worlds W1-W10 (themes, colours, briefings, banter, locals, elements) =====
+(function(){
+const T2=[
+ {sky:['#0a0606','#2a1a14','#6a4a3a','#d09060','#1a1210'],fog:0x4a3a30,grass:'#5a4a40',grass2:'#7a6a5a',dirt:'#3a302a',trunk:0x2a2220,leaf:[0x4a3a30,0x2a2018],kind:'charred',lava:1},
+ {sky:['#02102a','#063a5a','#20a0c0','#a0fff0','#04203a'],fog:0x3a90b0,grass:'#40c0b0',grass2:'#f0e0ff',dirt:'#c8b8a0',trunk:0x80a0c0,leaf:[0x40ffd0,0xff80e0],kind:'palm',ocean:1},
+ {sky:['#06060e','#1a1a3a','#4a4a7a','#ffe060','#10101e'],fog:0x3a3a5a,grass:'#6a6a50',grass2:'#8a8a60',dirt:'#5a4a3a',trunk:0x3a3030,leaf:[0x5a6a40,0xffe040],kind:'scorch'},
+ {sky:['#041010','#0a3030','#3a7070','#d0fff0','#062020'],fog:0x3a6a6a,grass:'#2a6a5a',grass2:'#a0e0e0',dirt:'#3a4a40',trunk:0x2a3a30,leaf:[0x3a8a7a,0xc0f0ff],kind:'jungle'},
+ {sky:['#0a0a0a','#2a2a2a','#5a5048','#e0a050','#1a1a1a'],fog:0x4a4440,grass:'#5a5a5a',grass2:'#7a6a50',dirt:'#4a4038',trunk:0x3a3a3a,leaf:[0x8a7a50,0x5a5a5a],kind:'twisted'},
+ {sky:['#2a0a2a','#7a2a6a','#ff80c0','#fff0a0','#4a1a3a'],fog:0xd080b0,grass:'#ffb0d8',grass2:'#b0f0ff',dirt:'#f0d0a0',trunk:0xffffff,leaf:[0xff60b0,0x80e0ff],kind:'round'},
+ {sky:['#06142a','#1a3a6a','#7aa8d8','#ffffff','#1a2a4a'],fog:0x9ab8d8,grass:'#d8ecf8',grass2:'#ffffff',dirt:'#8a90a0',trunk:0x3a3a40,leaf:[0x2a5a50,0xffffff],kind:'snow'},
+ {sky:['#01081a','#04204a','#1a4a8a','#60c0ff','#020a20'],fog:0x1a3a6a,grass:'#2a4a6a',grass2:'#c8b890',dirt:'#3a3a50',trunk:0x4a3a2a,leaf:[0x6a4aa0,0x40a0ff],kind:'alien',ocean:1},
+ {sky:['#100a20','#3a2a6a','#c080ff','#fff0c0','#20103a'],fog:0xc0a0e0,grass:'#f0e0b0',grass2:'#c0f0ff',dirt:'#e0c890',trunk:0xa0f0ff,leaf:[0xff90ff,0x90ffff],kind:'alien'},
+ {sky:['#0a0604','#3a2010','#8a5020','#ffb060','#1a0e06'],fog:0x6a4020,grass:'#6a4a30',grass2:'#8a6a40',dirt:'#4a3020',trunk:0x5a3a20,leaf:[0x7a5a30,0x9a4a20],kind:'twisted'}];
+PTH.push(...T2);
+PLCOL.push(0x6a5040,0x30d0c0,0xe0d040,0x3a8a7a,0x8a7a60,0xff80c0,0xe0f0ff,0x3050a0,0xd0a0ff,0xa06030);
+BRIEF.push(
+ ['A new signal from beyond the old frontier: Ashveil, a world of drifting ash dunes. Someone is mining the ash for power cores.','The diggers are guarded by a walking furnace. Cool it down and free the workers.'],
+ ['Glimmerreef glows from the sea floor. Its merfolk village has gone quiet, and the coral lights are dimming.','Rescue the village. Something with a very big mouth is guarding the pearls.'],
+ ['Thundervale is all storms and canyons. Naiara thinks she can learn something from the lightning here.','Stay low. A giant bird with a crown of thunder rules the sky.'],
+ ['Mirrormarsh reflects everything, including you. Our scouts swear they saw your squad there already.','Trust each other, not your reflections.'],
+ ['Gearhollow is an old robot factory, still humming. There are blueprints in there we really want.','The foreman never clocked out. Be polite. Then be faster.'],
+ ['Candyspire is a moon made of sweets. Yes, really. The Baby has been asking about it all week.','A very fancy villain has claimed all the candy. That cannot stand.'],
+ ['Frostfang Peaks swallowed a scout team two days ago. Their beacon is still blinking.','Bring them home. Watch the snow: it moves when something big does.'],
+ ['The Sunken Archive holds the oldest records in the galaxy. Someone has been reading them first.','Find out who. Quietly. It is a library, after all.'],
+ ['The Prism Desert splits sunlight into a thousand colours. The crystals there can power a brand-new armor call.','A riddle-loving guardian waits at the centre. Answer with teamwork.'],
+ ['Rustport is a scrapyard full of space pirates. They stole a ship module we need to go further.','Their captain loves a fair duel. Give him one he will remember.']);
+BANTER.push(
+ [[0,'The Queen is gone. But that new signal is still out there.'],[2,'Ten new worlds? I call dibs on punching the first boss.'],[4,'*giggles* Can we bring cake?']],
+ [[2,'Ashveil. Hot, dusty, and now free. My mane is full of ash.'],[4,'*giggles* The workers gave me a glowing rock!'],[1,'The mines are safe. Everyone goes home tonight.']],
+ [[3,'The merfolk are singing again. I rather like that.'],[0,'Coral lights are back on. Pretty good view.'],[4,'*giggles* A fish waved at me!']],
+ [[3,'I caught a little of that storm. I think I can shape it now.'],[2,'That bird was huge. I was bigger.'],[7,'The thunder kept time for me.']],
+ [[0,'Fighting yourself is weird.'],[2,'My copy was almost as cool as me. Almost.'],[4,'*giggles* My reflection giggled first!']],
+ [[1,'We got the blueprints! New frames for the hangar soon.'],[6,'That foreman sure ran a tight shift.'],[0,'Good salvage. Good day.']],
+ [[4,'*very happy giggle* Best. Moon. Ever.'],[2,'I may have eaten a small mountain of gumdrops.'],[3,'The Sugar Baron was all frosting, no fight.']],
+ [[1,'The scout team is safe and warm on board.'],[6,'Colder than a winter campfire up there.'],[5,'The snow kept its secrets. We kept ours.']],
+ [[3,'Someone was reading about the Vorrex Queen before we were.'],[0,'And about something older. Something that sent her.'],[7,'Then we follow the pages.']],
+ [[1,'The crystals are charging. Crystal Armor is almost ready.'],[4,'*giggles* Everything is rainbow!'],[2,'That sphinx asked me a riddle. I answered with a punch. Polite punch.']]);
+LOCALS.push(...[['ash-folk',0x8a7a70,0xff8a40,'horn','The ash mines are ours again!'],['mer-folk',0x5ad0d0,0xff90e0,'fin','Glimmerreef glows for you!'],['storm-folk',0x8a8ac0,0xffe040,'puff','The skies are calm. Thank you!'],['marsh-folk',0x4a9a80,0xc0fff0,'leaf','Our reflections thank you too!'],['bolt-folk',0x9a9a9a,0x40e0ff,'horn','The factory runs for us now!'],['sweet-folk',0xffc0e0,0xff60b0,'rabbit','Have a candy! Have ten!'],['peak-folk',0xf4fbff,0x80c8ff,'puff','The scouts are safe. Thank you!'],['ink-folk',0x4a4a7a,0xf0e8c8,'fin','The archive is open again!'],['glass-folk',0xd8f8ff,0xff90ff,'flame','The desert shines for you!'],['dock-folk',0x9a6a40,0xffc040,'rabbit','Rustport is honest again! Mostly.']].map(([n,c,a,ears,say])=>({n,c,a,ears,say})));
+if(window.PL_EL)window.PL_EL.push('fire','water','storm','void','earth','light','water','void','light','storm');
+if(window.FAM)Object.assign(window.FAM,{8:'Elementals',9:'Elementals',10:'Wild Fauna',11:'Mirror Kin',12:'Scrap Machines',13:'Sweet Critters',14:'Wild Fauna',15:'Archive Spirits',16:'Crystal Beasts',17:'Scrap Machines'});
+if(window.WORLD_EXTRA)Object.assign(window.WORLD_EXTRA,{8:['emberimp'],9:['tidewisp'],10:['gustkite','sparkram'],11:['nullsprite'],12:['cograt','shielddrone'],13:['pollenpuff'],14:['pebblebrute'],15:['tidewisp','nullsprite'],16:['hivescout'],17:['cograt','junkdrone']});
 })();
 
 </script>
