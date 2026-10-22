@@ -890,7 +890,7 @@ const SK={
  elbow:{n:'Dash Elbow',t:'melee',p:1.25,en:3,form:'human',st:'elbow',inp:'→ → + P'},
  aurakick:{n:'Spinning Aura Kick',t:'melee',p:0.75,hits:2,en:5,form:'human',hero:0,st:'oKick',aurakick:1,inp:'↓ ↙ ← + K'},orbit:{n:'Orbit Breaker',t:'melee',p:0.9,hits:3,en:8,form:'human',hero:0,st:'oRight',orbit:1,inp:'→ P · ← P · ↓ ↑ + P'},upper:{n:'Skybreaker Uppercut',t:'melee',p:1.65,en:6,form:'human',st:'uppercut',inp:'→ ↓ ↘ + P',fire:1},
  aura:{n:'Aura Burst',t:'aura',p:1.5,en:7,form:'human',st:'palm',inp:'↓ ↘ → + P'},
- rush:{n:'Hundred Fang Rush',t:'melee',p:0.33,hits:7,en:0,cp:40,form:'human',hero:0,st:'rush',inp:'P P P P P'},
+ rush:{n:'Hundred Thunder Fists',t:'melee',p:3.6,en:0,cp:40,form:'human',hero:0,cast:'ai_fists'},
  cyclone:{n:'Cyclone Heel',t:'melee',p:0.55,hits:3,en:6,all:1,form:'human',hero:1,st:'spin',inp:'↓ ↙ ← + K'},
  starfall:{n:'Starfall Axe Kick',t:'melee',p:2.0,en:0,cp:40,form:'human',hero:1,st:'slam',inp:'↓ ↑ + K'},
  meteor:{n:'Meteor Hammer',t:'melee',p:2.2,en:0,cp:40,form:'human',hero:2,st:'slam',inp:'↓ ↓ ↑ + P'},
@@ -905,7 +905,7 @@ const SK={
  twin:{n:'Twin Saber Rush',t:'sword',p:0.85,hits:2,en:6,form:'robot',hero:0,st:'slash'},
  rain:{n:'Photon Rain',t:'beam',p:1.15,en:12,form:'robot',all:1,hero:1,st:'beam'}};
 const HEROES=[
- {name:'AI',human:'Kai Ren',beast:'Wolf',col:'#3ef0ff',hp:64,en:500,atk:300,def:300,spd:300},
+ {name:'AI',human:'Kai Ren',beast:'Wolf',col:'#3ef0ff',hp:1000,en:500,atk:1000,def:1000,spd:1000},
  {name:'AERO',human:'Mira Sol',beast:'Dragon',col:'#ffd840',hp:54,en:30,atk:11,def:5,spd:14},
  {name:'LEO',human:'Dax Corran',beast:'Rex',col:'#ff4050',hp:78,en:20,atk:15,def:8,spd:8},
  {name:'NAIARA',human:'Naiara',beast:'',col:'#b060ff',hp:72,en:500,atk:300,def:300,spd:300,single:1,basic:'n_basic'},
@@ -1018,8 +1018,47 @@ PLANETS.push({n:'Mosswood',act:3,w:[['barkbeetle','wblob_blue','fungusfolk'],['f
  W('Blizzard Forge','frostsmith','chillturret','icewolf','cryoforeman'));
 })();
 
-const PGI=pi=>pi<8?0:pi<18?1:2;
-const NX=pi=>pi<8?26+pi*47:pi<18?20+(pi-8)*40:20+(pi-18)*40;
+// ===== PHASE 5: Act 4 worlds W21-W30 + The Unmaker (data; inserted before NODES) =====
+(function(){
+EBUILD.unmaker=()=>{const g=new T.Group(),R={type:'drone',root:g,rot:[],legs:[]};const body=grp(g,0,1.5,0);R.body=body;
+ const VO=new T.MeshBasicMaterial({color:0x06060c});const ED=new T.MeshBasicMaterial({color:0xe8e8ff,transparent:true,opacity:0.5,side:T.BackSide});
+ const robe=part(cone(0.75,2.2,12,1,true),VO,0,-0.55,0,body,false);const rim=part(cone(0.79,2.25,12,1,true),ED,0,-0.55,0,body,false);rim.scale.set(1.02,1,1.02);
+ const hd=part(sph(0.36,16,12),VO,0,0.75,0,body,false);const hr=part(sph(0.4,16,12),ED,0,0.75,0,body,false);
+ for(let i=0;i<40;i++){const a=Math.random()*PI*2,y=-1.4+Math.random()*2.4,r=0.2+0.55*(1-(y+1.4)/2.6);const st=part(sph(0.025,4,3),new T.MeshBasicMaterial({color:0x000000}),Math.cos(a)*r*0.98,y,Math.sin(a)*r*0.98,body,false);}
+ [-1,1].forEach(s=>{const e=part(sph(0.05,8,6),new T.MeshBasicMaterial({color:0xffffff}),0.3,0.78,s*0.12,body,false);});
+ const halo=part(new T.TorusGeometry(0.7,0.035,8,40),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.8}),-0.1,1.05,0,body,false);halo.rotation.y=PI/2;halo.rotation.x=0.25;R.rot.push(halo);
+ R.hands=[-1,1].map(s=>{const h=grp(body,0.5,0,s*0.95);part(sph(0.17,10,8),VO,0,0,0,h,false);part(sph(0.19,10,8),ED,0,0,0,h,false);return h;});
+ const ring=part(new T.TorusGeometry(1.25,0.02,6,48),new T.MeshBasicMaterial({color:0x9a9aff,transparent:true,opacity:0.5}),0,-1.6,0,body,false);ring.rotation.x=PI/2;R.rot.push(ring);
+ R.h=3.2;R.muzzle=grp(body,0.4,0.75,0);g.traverse(o=>{if(o.isMesh)o.userData.blk=1;});return finish(R);};
+const M=(n,base,tint,hp,atk,def,spd,eva,xp,el,x)=>Object.assign({n,base,tint,hp,atk,def,spd,eva,xp,el,coin:10},x||{});
+Object.assign(EN,{
+ thornknight:M('Thorn Knight','vbrawl',0x4a8a3a,96,30,14,9,0.06,31,'earth'),
+ shadowknight:M('Shadow Knight','vbrawl',0x2a2a3a,98,31,14,10,0.08,32,'void'),gargoylebot:M('Gargoyle Bot','bat',0x5a5a6a,80,31,8,16,0.2,32,'earth',{scl:1.3}),
+ meteorite:M('Meteorite','pebblebrute',0xff7a40,100,31,15,7,0.05,33,'fire'),cratercrawler:M('Crater Crawler','crawler',0x8a6a5a,96,32,14,8,0.05,33,'earth'),
+ tickbug:M('Tick Bug','hivescout',0xd0a040,84,32,10,16,0.15,34,'storm'),pendulumbot:M('Pendulum Bot','drone',0xb08a40,90,32,12,12,0.1,34,'storm'),
+ lanternfish:M('Lantern Fish','tidewisp',0x40ffb0,88,33,10,15,0.15,35,'water'),deepjelly:M('Deep Jelly','drone',0x8060ff,92,33,11,12,0.12,35,'water'),
+ wattwisp:M('Watt Wisp','nullsprite',0xffe040,88,34,10,16,0.2,36,'storm'),pluggolem:M('Plug Golem','golem',0x40a0ff,120,34,16,6,0,36,'storm',{scl:1.1}),
+ coremite:M('Core Mite','cograt',0xc0c0d0,94,34,12,14,0.12,37,'earth'),craterspider:M('Crater Spider','crawler',0x5a5a6a,104,35,15,9,0.06,37,'earth',{scl:1.2}),
+ flipfrog:M('Flip Frog','pebblebrute',0x60ff90,104,35,14,10,0.08,38,'earth'),topsytree:M('Topsy Tree','pollenpuff',0x3a8a3a,98,36,13,9,0.08,38,'earth'),
+ royalguard:M('Royal Guard','vbrawl',0xc080ff,112,37,16,10,0.08,40,'void'),hivelancer:M('Hive Lancer','vblast',0x9a40e0,100,38,12,12,0.1,40,'void',{beam:1}),
+ voidsprite:M('Void Sprite','nullsprite',0x202030,100,38,12,17,0.2,42,'void'),nullknight:M('Null Knight','vbrawl',0x101018,118,39,17,10,0.08,42,'void')});
+const BO=(n,base,tint,scl,i,el)=>({n,base,tint,scl,hp:950+i*85,atk:40+i*5,def:14+i,spd:9+(i%3),eva:0.04,xp:130+i*15,coin:90+i*10,beam:1,boss:1,el});
+Object.assign(EN,{bloomqueen:BO('BLOOM QUEEN FLORIEL','vchief',0xff90c0,1.3,20,'light'),duskhelm:BO('LORD DUSKHELM','vchief',0x3a2a4a,1.35,21,'void'),
+ comettitan:BO('COMET TITAN','golem',0xffa060,1.7,22,'fire'),chronoguard:BO('CHRONOGUARD','golem',0xe0c060,1.6,23,'storm'),
+ abyssalmaw:BO('ABYSSAL MAW','boss',0x1a3a6a,1.3,24,'water'),overloadcore:BO('OVERLOAD CORE','shielddrone',0x40c0ff,2.6,25,'storm'),
+ moonheart:BO('MOONHEART GUARDIAN','golem',0xd0d8ff,1.7,26,'light'),gardenermaybe:BO('GARDENER OF MAYBE','vchief',0x90e0a0,1.3,27,'light'),
+ thraxis:BO('VORREX KING THRAXIS','vchief',0x6a20a0,1.45,28,'void'),
+ unmaker:Object.assign(BO('THE UNMAKER','unmaker',0,1.25,30,'void'),{hp:4400,atk:200,def:48,xp:800,coin:600})});
+const W=(n,a,b,c,boss)=>({n,act:4,w:[[a,b,a],[b,c,a],[c,a,b]],b:[a,boss,b]});
+PLANETS.push(W('Petalwind','pollenpuff','thornknight','gumdropslime','bloomqueen'),W('Obsidian Keep','shadowknight','gargoylebot','nullsprite','duskhelm'),
+ W('Starfall Crater','meteorite','cratercrawler','emberimp','comettitan'),W('Clockwork Spire','tickbug','pendulumbot','cograt','chronoguard'),
+ W('Gloomtide','lanternfish','deepjelly','tidewisp','abyssalmaw'),W('Voltara Grid','wattwisp','pluggolem','sparkram','overloadcore'),
+ W('Hollow Moon','coremite','craterspider','shielddrone','moonheart'),W('Paradox Garden','flipfrog','topsytree','pollenpuff','gardenermaybe'),
+ W('Vorrex Throneworld','royalguard','hivelancer','hivebrawl','thraxis'),{n:'The Null Rift',act:4,w:[['voidsprite','nullknight','voidsprite'],['nullknight','voidsprite','nullsprite'],['voidsprite','nullknight','nullknight']],b:['voidsprite','unmaker','nullknight']});
+})();
+
+const PGI=pi=>pi<8?0:pi<18?1:pi<28?2:3;
+const NX=pi=>pi<8?26+pi*47:pi<18?20+(pi-8)*40:pi<28?20+(pi-18)*40:20+(pi-28)*40;
 const NODES=[];PLANETS.forEach((P,pi)=>{P.w.forEach((e,wi)=>NODES.push({n:`${P.n} · Wave ${wi+1}/3`,e,planet:pi,wave:wi+1,x:NX(pi),y:60+wi*34}));NODES.push({n:`${P.n} · BOSS`,e:P.b,planet:pi,wave:0,boss:1,x:NX(pi),y:172});});
 // ---------- STATE ----------
 let S=null,sceneN='title',B=null,busy=false,CI=null,flashA=0,combo=null,clock=0;const fx3=[],nums=[];
@@ -1027,7 +1066,7 @@ function mkHero(i){const h=HEROES[i];return {id:i,name:h.name,lvl:1,xp:0,mhp:h.h
 const EN_BASE={AI:500,NAIARA:500,BABY:2000,DUKE:500,KAGE:500,ACE:10000};
 function fN(n){n=Math.round(Number(n)||0);const a=Math.abs(n);return a>=1e6?(n/1e6).toFixed(a>=1e7?0:1).replace(/\.0$/,'')+'M':a>=1e5?Math.round(n/1e3)+'K':String(n);}window.fN=fN;
 function migrateEN(d){// v8 EN buff: lift old saves to new base max EN (+3/level from level-ups), refill EN
- if(!d)return d;const L=[].concat(d.roster||[],d.party||[]);L.forEach(h=>{const b=EN_BASE[h&&h.name];if(!b)return;const want=b+3*((h.lvl||1)-1);if((h.men||0)<want){h.men=want;h.en=want;}});L.forEach(h=>{if(h&&h.name==='ACE'){if((h.mhp||0)<5000000){h.mhp=5000000;if('bhp' in h)h.bhp=5000000;h.hp=h.mhp;}if((h.def||0)<10000)h.def=10000;if((h.atk||0)<10000)h.atk=10000;if((h.spd||0)<10000)h.spd=10000;}});d.enMig=1;return d;}
+ if(!d)return d;const L=[].concat(d.roster||[],d.party||[]);L.forEach(h=>{const b=EN_BASE[h&&h.name];if(!b)return;const want=b+3*((h.lvl||1)-1);if((h.men||0)<want){h.men=want;h.en=want;}});L.forEach(h=>{if(h&&h.name==='AI'&&!d.aiBuff){const lv=(h.lvl||1)-1;const hp=1000+9*lv;if((h.bhp||h.mhp||0)<hp){const add=hp-(h.bhp||h.mhp||0);h.bhp=hp;h.mhp=(h.mhp||0)+add;h.hp=h.mhp;}[['atk',2],['def',1],['spd',1]].forEach(([k,g])=>{const w=1000+g*lv;if((h[k]||0)<w)h[k]=w;});}});d.aiBuff=1;L.forEach(h=>{if(h&&h.name==='ACE'){if((h.mhp||0)<5000000){h.mhp=5000000;if('bhp' in h)h.bhp=5000000;h.hp=h.mhp;}if((h.def||0)<10000)h.def=10000;if((h.atk||0)<10000)h.atk=10000;if((h.spd||0)<10000)h.spd=10000;}});d.enMig=1;return d;}
 function stripRemoved(o,dep=0){const RM=['a_crescent'];if(!o||typeof o!=='object'||dep>6)return o;if(Array.isArray(o)){for(let i=o.length-1;i>=0;i--){if(RM.includes(o[i]))o.splice(i,1);else stripRemoved(o[i],dep+1);}}else{for(const k of Object.keys(o)){if(RM.includes(k))delete o[k];else if(RM.includes(o[k]))o[k]=null;else stripRemoved(o[k],dep+1);}}return o;}
 function fixParty(d){d=__fixParty0(d);try{stripRemoved(d);}catch(_){}return migrateEN(d);}
 function __fixParty0(d){if((d.ver||3)<5){if((d.node||0)>=4)d.node+=4;d.ver=5;}if(d.ver<6){if((d.node||0)>=8)d.node+=4;d.ver=6;}if(!d.roster){d.roster=(d.party||[]).slice();}for(let i=0;i<HEROES.length;i++)if(!d.roster.find(h=>h.id===i))d.roster.push(mkHero(i));d.roster.sort((a,b)=>a.id-b.id);d.unlocked=d.unlocked||{};{const bn=NODES.findIndex(n=>n.planet===ACE_UNLOCK_PLANET&&n.boss);if(!(d.unlocked.ace||(d.node||0)>bn))d.sel=(d.sel||[]).filter(i=>i!==5);const dn=NODES.findIndex(n=>n.planet===0&&n.boss);if(!(d.unlocked.duo||(d.node||0)>dn))d.sel=(d.sel||[]).filter(i=>i<6);}if(!d.sel||!d.sel.length)d.sel=[0,1,2];d.party=d.sel.map(id=>d.roster[id]);d.coins=d.coins||0;d.inv=d.inv||[];d.roster.forEach(h=>{h.eq=h.eq||{};});d.items=Object.assign({kit:0,cell:0,pot_s:0,pot_l:0,revive:0,mrev:0,sup:0,tonA:0,tonD:0},d.items||{});return d;}
@@ -1255,7 +1294,7 @@ function victory(){busy=false;sceneN='victory';B.cur=null;const xp=Math.round((B
  else{S.party.forEach(h=>{h.en=Math.min(h.men,h.en+5);});}
  save();drawParty();$('menu').innerHTML='<h4>'+ttl+'</h4><div class="it">Tap / Esc to skip</div>';busy=true;const hero=(B.lastKill&&B.lastKill.hp>0?B.lastKill:null)||S.party.find(x=>x.hp>0);
  const newAce=cur.boss&&cur.planet===ACE_UNLOCK_PLANET&&!(S.unlocked&&S.unlocked.ace);if(newAce){S.unlocked=Object.assign({},S.unlocked,{ace:1});save();}const newDuo=cur.boss&&cur.planet===0&&!(S.unlocked&&S.unlocked.duo);if(newDuo){S.unlocked=Object.assign({},S.unlocked,{duo:1});save();}
- celebrate(hero,()=>thanksCut(()=>(newDuo?duoUnlockCut:newAce?aceUnlockCut:(f=>f()))(()=>{busy=false;showHeroes(true);[...S.party].forEach(u=>{u.posO=null;});if(cur.boss&&!window.SKIP_STORY){if(cur.planet===7||cur.planet===17){window.__endAct=cur.planet===7?1:2;storyEnding(()=>{window.__endAct=0;returnToShip(cur.planet);});return;}returnToShip(cur.planet);return;}menu([{l:cur.boss?'Travel ▶':'Next Wave ▶',f:cur.boss?map:startBattle},{l:'Shop',f:()=>shopMenu(map)},{l:'Hangar',f:map}],null,ttl);})));}
+ celebrate(hero,()=>thanksCut(()=>(newDuo?duoUnlockCut:newAce?aceUnlockCut:(f=>f()))(()=>{busy=false;showHeroes(true);[...S.party].forEach(u=>{u.posO=null;});if(cur.boss&&!window.SKIP_STORY){if(cur.planet===7||cur.planet===17||cur.planet===27){window.__endAct=cur.planet===7?1:cur.planet===17?2:3;storyEnding(()=>{window.__endAct=0;returnToShip(cur.planet);});return;}returnToShip(cur.planet);return;}menu([{l:cur.boss?'Travel ▶':'Next Wave ▶',f:cur.boss?map:startBattle},{l:'Shop',f:()=>shopMenu(map)},{l:'Hangar',f:map}],null,ttl);})));}
 function gameOver(){busy=false;sceneN='over';SFX.lose();log('Your squad has been scrapped...');menu([{l:'Retry Battle',f:()=>{const sv=load();if(sv)S=sv;S.party.forEach(h=>{h.hp=h.mhp;h.en=h.men;});startBattle();}},{l:'Title Screen',f:title}],null,'GAME OVER');}
 // ---------- OVERLAY 2D ----------
 function proj(v){const p=v.clone().project(cam);return{x:(p.x+1)/2*400,y:(1-p.y)/2*220,z:p.z};}
@@ -1266,7 +1305,7 @@ function overlay(dt){cx.setTransform(2.4,0,0,2.4,0,0);cx.clearRect(0,0,400,220);
  if(sceneN==='title'){const g=cx.createLinearGradient(0,0,0,70);g.addColorStop(0,'rgba(0,0,10,.75)');g.addColorStop(1,'rgba(0,0,10,0)');cx.fillStyle=g;cx.fillRect(0,0,400,70);grad('ROBO BEASTS',200,38,30,'center');
   txt('STARFALL DEFENDERS  ·  HUMAN · BEAST · ROBOT',200,52,'#3ef0ff',7);txt('Arrows + Enter/Space · Esc back · M mute · Mouse/touch OK',200,212,'#cde',7);return;}
  if(sceneN==='map'){cx.fillStyle='rgba(2,6,20,.72)';cx.fillRect(0,0,400,220);txt('TACTICAL MAP',14,20,'#3ef0ff',10,'left');txt('NEXT: '+NODES[S.node].n.toUpperCase(),386,20,'#ffe060',9,'right');
-  cx.strokeStyle='#3ef0ff88';cx.setLineDash([3,3]);cx.lineWidth=1;const pg=PGI(NODES[S.node].planet),onP=n=>PGI(n.planet)===pg;txt(['ACT 1 · THE VORREX WAR','ACT 2 · BEYOND THE FRONTIER','ACT 3 · THE DEEP FRONTIER'][pg],14,31,['#9ab','#ff9ad8','#80ffb0'][pg],6,'left');cx.beginPath();let f0=1;NODES.forEach(n=>{if(!onP(n))return;f0?cx.moveTo(n.x,n.y):cx.lineTo(n.x,n.y);f0=0;});cx.stroke();cx.setLineDash([]);
+  cx.strokeStyle='#3ef0ff88';cx.setLineDash([3,3]);cx.lineWidth=1;const pg=PGI(NODES[S.node].planet),onP=n=>PGI(n.planet)===pg;txt(['ACT 1 · THE VORREX WAR','ACT 2 · BEYOND THE FRONTIER','ACT 3 · THE DEEP FRONTIER','ACT 4 · INTO THE NULL RIFT'][pg],14,31,['#9ab','#ff9ad8','#80ffb0','#e0e0ff'][pg],6,'left');cx.beginPath();let f0=1;NODES.forEach(n=>{if(!onP(n))return;f0?cx.moveTo(n.x,n.y):cx.lineTo(n.x,n.y);f0=0;});cx.stroke();cx.setLineDash([]);
   NODES.forEach((n,i)=>{if(!onP(n))return;const c=i<S.node?'#3f8':i===S.node?'#ffcc33':'#567';cx.save();cx.translate(n.x,n.y);cx.rotate(0.785);cx.fillStyle=c;const z=i===S.node?5+Math.sin(clock*6):4;cx.fillRect(-z,-z,2*z,2*z);cx.restore();txt(n.boss?'☠ BOSS':'W'+n.wave,n.x,n.y+12,n.boss?'#f66':'#cde',5);});PLANETS.forEach((P,pi)=>{if(PGI(pi)!==pg)return;if(pi<8)txt(P.n,30+pi*56,44,NODES[S.node].planet===pi?'#ffe060':'#9ab',6);else txt(P.n,NX(pi),pi%2?50:42,NODES[S.node].planet===pi?'#ffe060':'#9ab',5);});return;}
  if(!B)return;
  if(!CI){B.en.forEach(u=>{if(u.hp<=0)return;const m=model(u);const p=proj(m.root.position.clone().add(new V3(0,m.h+0.25,0)));const w=34;cx.fillStyle='#000c';cx.fillRect(p.x-w/2-1,p.y-1,w+2,5);
@@ -1282,7 +1321,7 @@ function overlay(dt){cx.setTransform(2.4,0,0,2.4,0,0);cx.clearRect(0,0,400,220);
  if(CI)drawCI(dt);
  if(flashA>0){cx.fillStyle=`rgba(255,255,255,${flashA})`;cx.fillRect(0,0,400,220);flashA-=dt*2;}
  if((sceneN==='victory'&&!CUT)||sceneN==='ending'){cx.fillStyle='rgba(0,8,20,.7)';cx.fillRect(0,55,400,100);cx.fillStyle='#3ef0ff';cx.fillRect(0,55,400,1);cx.fillRect(0,154,400,1);
-  grad(sceneN==='ending'?'ACT 3 COMPLETE!':'MISSION COMPLETE',200,84,20,'center');(B.vmsg||[]).forEach((m,i)=>txt(m,200,102+i*12,'#fff',8));}
+  grad(sceneN==='ending'?'GALAXY SAVED!':'MISSION COMPLETE',200,84,20,'center');(B.vmsg||[]).forEach((m,i)=>txt(m,200,102+i*12,'#fff',8));}
  if(sceneN==='over'){cx.fillStyle='rgba(20,0,0,.75)';cx.fillRect(0,0,400,220);txt('GAME OVER',200,105,'#ff4040',30,'center','italic');txt('The Starfall Defenders have fallen...',200,125,'#ccc',9);}}
 function drawCI(dt){const c=CI,t=c.t,k=t/c.dur,u=c.u,hero=!u.enemy,col=hero?HEROES[u.id].col:'#20ffe0';
  const v=cx.createRadialGradient(200,110,60,200,110,240);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,20,.85)');cx.fillStyle=v;cx.fillRect(0,0,400,220);
@@ -2573,7 +2612,7 @@ function returnLines(pi){const nx=pi+1;const ban=(BANTER[pi]||BANTER[0]).filter(
  ...ban.map(([w,t],i)=>({who:w,t})),
  {fx:S_=>{S_.cur.holo('ORIN');S_.cur.setPlanet(Math.min(nx,PLCOL.length-1));},cam:[1.2,2.4,5.5,0,1.7,1.2],who:'ORIN',t:nx<PLANETS.length?`The Council saw everything. Earth is proud of you. Rest, then set course for ${pName(nx)}. They need you.`:'The Council saw everything.'},
  {fx:S_=>S_.cur.holo(null),cam:[0,3.0,9.5,0,1.3,0],who:'VESTA',t:'Bridge systems are open. Party, Equip, Shop and Story are available from the war room.'}];}
-function endingLines(){const ea=window.__endAct;if(ea===1)return act1End();if(ea===2)return act2End();if(S&&S.node>=NODES.length-1)return act3End();if(S&&S.node>NODES.findIndex(n=>n.planet===17&&n.boss))return act2End();if(S&&S.node<NODES.length-1)return act1End();return[
+function endingLines(){const ea=window.__endAct;if(ea===1)return act1End();if(ea===2)return act2End();if(ea===3)return act3End();if(S&&S.node>=NODES.length-1)return act4End();if(S&&S.node>NODES.findIndex(n=>n.planet===27&&n.boss))return act3End();if(S&&S.node>NODES.findIndex(n=>n.planet===17&&n.boss))return act2End();if(S&&S.node<NODES.length-1)return act1End();return[
  {set:'space',fx:S_=>{setPlanetCol(S_.cur.pl,0x3a7ad8);},cam:[150,45,170,-10,5,0],snap:1,cap:'THE VORREX QUEEN HAS FALLEN',capms:3500,t:'',wait:3},
  {cam:[60,25,110,10,4,0],who:'VESTA',t:'All Vorrex signals are fading across the frontier. Setting course for home. Setting course for Earth.'},
  {set:'earth',fx:S_=>{S_.cur.crowd.visible=true;S_.cur.fw=1;},cam:[-140,50,180,0,60,-100],snap:1,cap:'HOME',who:'NAR',t:'Earth greets the Starfall Titan with every light in every city.'},
@@ -2601,12 +2640,23 @@ function act2End(){return[
  {set:'earth',fx:S_=>{S_.cur.crowd.visible=true;S_.cur.fw=1;},cam:[60,30,260,0,140,-200],snap:1,cap:'END OF ACT 2 · ACT 3: THE DEEP FRONTIER',capms:5000,t:'',wait:5}];}
 function act3End(){return[
  {set:'space',fx:S_=>{setPlanetCol(S_.cur.pl,0xc0e0ff);},cam:[150,45,170,-10,5,0],snap:1,cap:'THE BLIZZARD FORGE IS SILENT',capms:3500,t:'',wait:3},
- {cam:[60,25,110,10,4,0],who:'VESTA',t:'The Vorrex super-weapon is frozen solid, and it is never waking up. Twenty more worlds are safe.'},
+ {cam:[60,25,110,10,4,0],who:'VESTA',t:'The Vorrex super-weapon is frozen solid, and it is never waking up. Twenty more worlds are safe. But the Archive pages point to the Null Rift.'},
  {set:'council',cam:[0,3.2,8.5,0,1.3,0],snap:1,who:'ORIN',t:'Thanks to the Starfall relay, all of Earth watched you do it. You have become legends.'},
  {who:'SERA',t:'The pages from the Archive name the one who sent the Queen. We will be ready when they come.'},
  {who:8,t:'Whoever they are... we will try being friends first. And if not, we will be brave together.'},
  {who:4,t:'*happy giggle* Cake. Now. Please.'},
- {set:'earth',fx:S_=>{S_.cur.crowd.visible=true;S_.cur.fw=1;},cam:[60,30,260,0,140,-200],snap:1,cap:'END OF ACT 3 · TO BE CONTINUED',capms:5000,t:'',wait:5}];}
+ {set:'earth',fx:S_=>{S_.cur.crowd.visible=true;S_.cur.fw=1;},cam:[60,30,260,0,140,-200],snap:1,cap:'END OF ACT 3 · ACT 4: INTO THE NULL RIFT',capms:5000,t:'',wait:5}];}
+function act4End(){return[
+ {set:'space',fx:S_=>{setPlanetCol(S_.cur.pl,0xffffff);},cam:[150,45,170,-10,5,0],snap:1,cap:'THE NULL RIFT IS CLOSING',capms:3500,t:'',wait:3},
+ {cam:[60,25,110,10,4,0],who:'VESTA',t:'The Unmaker has stopped. The missing starlight is pouring back into the galaxy. Every world has its colour again.'},
+ {who:8,t:'It was not evil. It was just alone in the dark for a very long time. Now it can rest as a new star.'},
+ {who:5,t:'...Even the void can be given a light. I would know.'},
+ {set:'council',cam:[0,3.2,8.5,0,1.3,0],snap:1,who:'ORIN',t:'Thirty-eight worlds. Humans, Vorrex, star-folk and Blobbits, all at peace. You did that. Together.'},
+ {who:'SERA',t:'King Thraxis sends his thanks. The Vorrex will build new homes, and this time they will ask first.'},
+ {who:S.sel[0],t:'We just answered the call. Same as anyone would.'},
+ {who:4,t:'*happiest psychic giggle* NOW can we have the floating cake?'},
+ {who:'SERA',t:'Cake approved. Galaxy-wide.'},
+ {set:'earth',fx:S_=>{S_.cur.crowd.visible=true;S_.cur.fw=1;},cam:[60,30,260,0,140,-200],snap:1,cap:'THE END · THANK YOU FOR PLAYING',capms:6000,t:'',wait:6}];}
 function storyIntro(done){stSave('intro');if(S){S.brief=S.brief||{};S.brief[0]=1;}playStory(introLines(),done);}
 function storyBrief(i,done){if(S){S.brief=S.brief||{};S.brief[i]=1;save();}playStory(briefLines(i),done);}
 function returnToShip(pi,done){stSave('ret'+pi);playStory(returnLines(pi),done||bridgeHub);}
@@ -2823,6 +2873,10 @@ const autoBtn=document.createElement('button');autoBtn.id='autoBtn';autoBtn.text
 function setAuto(v){AUTO=v;autoBtn.classList.toggle('on',AUTO);autoBtn.textContent=AUTO?'AUTO ■':'AUTO ▶';if(AUTO&&B){B.autoUsed=1;if(B.cur&&!B.cur.enemy&&!busy&&sceneN==='battle')setTimeout(()=>autoAct(B.cur),200);}}window.setAuto=setAuto;
 autoBtn.onclick=e=>{e.stopPropagation();setAuto(!AUTO);try{SFX.ok();}catch(_){}};
 function autoAct(h){if(!AUTO||!B||sceneN!=='battle'||busy||B.cur!==h||h.enemy)return;const foes=alive(B.en);if(!foes.length)return;if((B.chain||0)>=100&&window.teamFinisher){B.autoUsed=1;return window.teamFinisher(h);}
+ try{B.autoUsed=1;if((h.spirit||0)>=100&&!(h.asc>0)&&window.ascend)return window.ascend(h);
+  if(h.id===7&&window.armorUnlocked&&window.armorUnlocked()&&!(h.armor>0)&&h.en>=16&&SK.k_armor&&Math.random()<0.6)return act(h,SK.k_armor,foes);
+  if(window.framesUnlocked&&window.framesUnlocked()&&!(h.frame>0)&&h.en>=20&&SK.fr_call&&Math.random()<0.35)return act(h,SK.fr_call,foes);
+  if(window.COMBOS&&h.en>=12&&Math.random()<0.5){const c=window.COMBOS.find(c=>(c.a===h.id||c.b===h.id)&&S.party.some(u=>u.id===(c.a===h.id?c.b:c.a)&&u.hp>0&&!u.comboSkip));if(c&&SK[c.k])return act(h,SK[c.k],[foes.slice().sort((a,b)=>a.hp-b.hp)[0]]);}}catch(e){console.warn('auto+',e);}
  // heal a badly hurt ally with an item first
  const hurt=alive(S.party).filter(p=>p.hp<p.mhp*0.3).sort((a,b)=>a.hp/a.mhp-b.hp/b.mhp)[0];
  if(hurt){const ik=Object.keys(ITEMS).find(k=>(S.items[k]||0)>0&&/heal|repair|potion|kit/i.test(ITEMS[k].n+' '+ITEMS[k].d)&&/HP/.test(ITEMS[k].d)&&ITEMS[k].ok(hurt));if(ik)return useItem(h,ik,hurt);}
@@ -3893,6 +3947,134 @@ const _cmd=commands;commands=function(h){try{if(h.comboSkip){h.comboSkip=0;log(`
 // reset per battle
 const _sb=startBattle;startBattle=function(){try{alv().forEach(h=>{h.asc=0;h.ascT=0;h.armor=0;h.comboSkip=0;h.spirit=Math.min(h.spirit||0,60);});armorMesh(false);}catch(_){}const r=_sb.apply(this,arguments);try{alv().forEach(h=>auraOn(h));}catch(_){}return r;};
 const _v=victory;victory=function(){try{alv().forEach(h=>{h.asc=0;h.armor=0;h.comboSkip=0;auraOn(h);});armorMesh(false);}catch(_){}return _v.apply(this,arguments);};
+})();
+
+</script>
+<script>
+// ===== PHASE 5: Act 4 worlds W21-W30 (themes, colours, briefings, banter, locals, elements, chips) =====
+(function(){
+PTH.push(
+ {sky:['#1a0a20','#5a2a5a','#ff90c0','#fff0d0','#2a1028'],fog:0xe0a0c0,grass:'#80c050',grass2:'#ffa0d0',dirt:'#8a6a4a',trunk:0x6a4a2a,leaf:[0xff90c0,0xffe060],kind:'round'},
+ {sky:['#020206','#0a0a1a','#2a1a3a','#8a60c0','#06040e'],fog:0x1a1428,grass:'#2a2a34',grass2:'#3a3048',dirt:'#1a1a22',trunk:0x1a1a22,leaf:[0x3a2a4a,0x2a1a3a],kind:'twisted'},
+ {sky:['#0a0402','#3a1a0a','#a04a1a','#ffc080','#1a0a04'],fog:0x6a3a1a,grass:'#5a4a40',grass2:'#ff7a40',dirt:'#3a2a20',trunk:0x2a2018,leaf:[0x4a3a30,0xff6a20],kind:'charred',lava:1},
+ {sky:['#0a0804','#3a2a10','#a08040','#fff0c0','#1a1408'],fog:0x8a6a3a,grass:'#a08a50',grass2:'#d0b060',dirt:'#5a4a2a',trunk:0xb08a40,leaf:[0xd0a040,0x8a6a2a],kind:'twisted'},
+ {sky:['#000408','#001428','#00305a','#40ffb0','#000a14'],fog:0x002040,grass:'#0a3a4a',grass2:'#40ffb0',dirt:'#0a1a2a',trunk:0x1a3a4a,leaf:[0x40ffb0,0x8060ff],kind:'alien',ocean:1},
+ {sky:['#02040a','#0a1a3a','#2060c0','#ffe040','#040a1a'],fog:0x1a3a6a,grass:'#2a3a5a',grass2:'#40a0ff',dirt:'#1a2a3a',trunk:0x4a5a7a,leaf:[0x40a0ff,0xffe040],kind:'alien'},
+ {sky:['#000000','#0a0a14','#3a3a5a','#d0d8ff','#04040a'],fog:0x2a2a3a,grass:'#6a6a7a',grass2:'#9a9aaa',dirt:'#3a3a44',trunk:0x5a5a6a,leaf:[0xd0d8ff,0x8a8aa0],kind:'snow'},
+ {sky:['#1a2a10','#4a7a3a','#a0e0a0','#fff0ff','#0a1a08'],fog:0x90c090,grass:'#60c060',grass2:'#ffb0ff',dirt:'#6a5a3a',trunk:0x5a3a2a,leaf:[0x60ff90,0xff90ff],kind:'jungle'},
+ {sky:['#0a0214','#2a0a3a','#6a1a8a','#ff60ff','#14041e'],fog:0x3a0a4a,grass:'#4a2a5a',grass2:'#8a40c0',dirt:'#2a1a30',trunk:0x2a1030,leaf:[0x9a40e0,0x6a20a0],kind:'twisted'},
+ {sky:['#000000','#04040a','#0a0a1a','#ffffff','#000000'],fog:0x08080e,grass:'#14141c',grass2:'#2a2a3a',dirt:'#0a0a10',trunk:0x14141c,leaf:[0x2a2a3a,0xe8e8ff],kind:'alien'});
+PLCOL.push(0xff90c0,0x3a2a4a,0xffa060,0xe0c060,0x1a3a6a,0x40a0ff,0xd0d8ff,0x90e0a0,0x6a20a0,0x101018);
+BRIEF.push(
+ ['Petalwind is a peaceful world of flower plains. They have never needed heroes before. They need us now.','Something is draining the colour from their flowers, and their Queen has gone strange.'],
+ ['Obsidian Keep is a castle the size of a mountain. Ace has gone very quiet since we set course.','Its lord says he knew Ace, long ago. Be ready for answers, and for a fight.'],
+ ['Starfall Crater is where our Titan\'s power crystal was found. Where the Starfall began.','A comet with arms and legs guards it. That is not a sentence I expected to say.'],
+ ['Clockwork Spire is a tower made of time-gears. Strange things happen to turn order there.','The Chronoguard keeps the clocks. Make it lose track of time.'],
+ ['Gloomtide is a glowing deep ocean. Naiara says the water there remembers her.','Something with a very big mouth lives at the bottom. Light the way.'],
+ ['Voltara Grid is a city made of electricity. Its core is about to overload.','This one needs everyone. Bring your best team.'],
+ ['Hollow Moon is not a moon. It is a ship. A very old one.','Its guardian protects the heart of the ship. Show it we are friends.'],
+ ['Paradox Garden grows upside-down. The Gardener of Maybe knows something about our true enemy.','Listen before you fight. The answer might surprise you.'],
+ ['The Vorrex Throneworld. The Queen\'s partner, King Thraxis, rules here. He is angry, and he is afraid.','Beat him, then talk to him. The Vorrex were running from something.'],
+ ['The Null Rift. The edge of space. The Unmaker lives here: a being made of missing starlight.','It wants to fold the galaxy into silence. We will show it why the galaxy is worth the noise.']);
+BANTER.push(
+ [[0,'The Forge is frozen. But the Archive pages point past the edge of the map.'],[8,'Then we will draw a new map!']],
+ [[1,'Petalwind\'s flowers got their colours back. That was the best thing I\'ve seen all year.'],[4,'*giggles* I smell like flowers now.']],
+ [[5,'...Duskhelm was my old friend. He chose the dark. I chose to come back.'],[0,'And we are glad you did, Ace.']],
+ [[6,'So this is where the Starfall began. Feels like coming home.'],[2,'A comet with fists. I\'m putting that on a poster.']],
+ [[3,'Time went backwards twice in that tower. I am getting a headache.'],[7,'I fought the same robot three times. It lost three times.']],
+ [[3,'The water remembered me. I think... I was born there.'],[1,'Then we will visit again. Without the giant mouth.']],
+ [[0,'That took every one of us. Great teamwork.'],[8,'My circuits are buzzing! In a good way!']],
+ [[4,'*giggles* The moon-ship says hello. It is very old and very nice.'],[6,'Never thought I\'d tip my hat to a moon.']],
+ [[1,'The Gardener said the Unmaker is lonely. Lonely enough to want silence everywhere.'],[8,'Maybe it just needs a friend.']],
+ [[0,'Thraxis surrendered. He says the Vorrex were only ever running from the Unmaker.'],[5,'Even kings fear the dark. He will ride with us now.'],[4,'*brave giggle* Let\'s go see the Rift.']]);
+LOCALS.push(...[['petal-folk',0xffd0e0,0xff90c0,'leaf','The flowers sing again!'],['keep-folk',0x4a4a5a,0x9a60ff,'horn','The Keep is free!'],['crater-folk',0x8a5a3a,0xffa060,'flame','The crater glows for you!'],['tick-folk',0xd0b070,0xffe060,'horn','Right on time, heroes!'],['deep-folk',0x2a5a7a,0x40ffb0,'fin','The deep shines again!'],['watt-folk',0x3a5a8a,0xffe040,'flame','Power restored! Thank you!'],['moon-folk',0xd0d8ff,0xffffff,'puff','Our moon-ship thanks you!'],['garden-folk',0x60c060,0xff90ff,'leaf','Maybe... thank you! Definitely thank you!'],['vorrex-folk',0x6a3a8a,0xc080ff,'horn','We are free from fear. Thank you.'],['star-folk',0xe8e8ff,0xffffff,'puff','The stars are shining again!']].map(([n,c,a,ears,say])=>({n,c,a,ears,say})));
+if(window.PL_EL)window.PL_EL.push('light','void','fire','storm','water','storm','light','earth','void','void');
+if(window.FAM)Object.assign(window.FAM,{28:'Garden Guard',29:'Shadow Court',30:'Comet Kin',31:'Clockwork',32:'Deep Kin',33:'Grid Machines',34:'Moon Kin',35:'Paradox Kin',36:'Vorrex Legion',37:'Null Kin'});
+if(window.WORLD_EXTRA)Object.assign(window.WORLD_EXTRA,{28:['pollenpuff'],29:['nullsprite'],30:['emberimp'],31:['cograt'],32:['tidewisp'],33:['sparkram'],34:['shielddrone'],35:['pollenpuff'],36:['hivescout'],37:['nullsprite']});
+const C4=[['bloom','Bloom Burst','light'],['dusk','Dusk Blade','void'],['comet','Comet Fist','fire'],['chrono','Chrono Tick','storm'],['abyss','Abyss Bite','water'],['overload','Overload Arc','storm'],['moon','Moonheart Pulse','light'],['maybe','Maybe Bloom','earth'],['thrax','Royal Lance','void']];
+if(window.COPY_CHIPS)C4.forEach(c=>{window.COPY_CHIPS.push(c);SK['chip_'+c[0]]={n:c[1]+' (Chip)',t:'beam',p:2.3,en:16,form:'any',hero:-1,chip:1,elem:c[2],st:'beam'};});
+})();
+
+</script>
+<script>
+// ===== PHASE 5: Hundred Thunder Fists (AI), Hangar Frames (U1), AUTO for Ascend/combos/armor/frames =====
+(function(){
+const G=f=>{try{f();}catch(e){console.warn('p5',e);}};
+// ---------- AI: Hundred Thunder Fists (replaces Hundred Fang Rush in the same slot) ----------
+window.__fists=null;
+const _ov=overlay;overlay=function(){const r=_ov.apply(this,arguments);try{const F=window.__fists;if(F&&F.on){const big=F.n>=100;txt(F.n+' HITS',338,128,big?'#ffffff':'#ffe060',big?24:19);if(big)txt('THUNDER FINISH!',338,144,'#80e0ff',9);}}catch(_){}return r;};
+CAST.ai_fists=function(a,ts,s,T){const t=ts[0];const C=cineStart();C.objs=[];const F=window.__fists={n:0,on:1,ph:'dash'};B.banner={n:'HUNDRED THUNDER FISTS',t:0,big:1};
+ const R=model(a);const hb=home(t);let last=0,dealt=0;const P0=0.55,P1=2.85;
+ const drv=addFx({life:1e9,max:1e9,up:(f,dt)=>{G(()=>{const e=T.el();const c=center(t);
+  if(e<P0){F.ph='dash';camLook(center(a).add(new V3(2.2,0.8,2.6)),center(a),7);if(Math.random()<0.7){const p=center(a).add(new V3((Math.random()-0.5)*0.8,(Math.random()-0.5)*1.2,(Math.random()-0.5)*0.6));boltFx(p,p.clone().add(new V3((Math.random()-0.5)*0.9,(Math.random()-0.5)*0.9,0)),0x80e0ff,0.04,0.12,4);}}
+  else if(e<P1){F.ph='fists';camLook(c.clone().add(new V3(-3.0,1.0,2.6)),c,6);const want=Math.min(99,1+Math.floor((e-P0)/(P1-P0)*99));
+   while(F.n<want){F.n++;const hp=c.clone().add(new V3(-0.35+(Math.random()-0.5)*0.3,(Math.random()-0.5)*0.9,(Math.random()-0.5)*0.7));
+    if(F.n%2===0||GQ<2){const fl=celSprite(orbTex(F.n%3?0xfff4c0:0x9ff0ff),0.45,0.45);fl.position.copy(hp);scene.add(fl);addFx({mesh:fl,life:0.09,max:0.09,up:g=>{fl.material.opacity=g.life/g.max;}});}
+    if(F.n%3===0){const from=center(a).add(new V3(0.2,(Math.random()-0.5)*0.4,(Math.random()-0.5)*0.3));const len=from.distanceTo(hp);const arm=new T.Mesh(cyl(0.05,0.07,len,6),GLOW(0xbfeaff,0.55));arm.position.copy(from).lerp(hp,0.5);arm.lookAt(hp);arm.rotateX(PI/2);scene.add(arm);addFx({mesh:arm,life:0.1,max:0.1,up:g=>{arm.material.opacity=0.55*g.life/g.max;}});}
+    if(F.n%11===0)skyBolt(t,0xbfe8ff,0.1);if(F.n%4===0){try{SFX2.hit(false);}catch(_){}}
+    if(F.n%10===0){dealt++;leoHit(a,t,s.p*0.06,s.n,{t:'melee',sc:0xfff0c0,ic:0x80e0ff,k:'punch'});}
+    t.posO=hb.clone().add(new V3(Math.sin(F.n*2.3)*0.06,0,0));R.root.position.x=hb.x-1.15+Math.sin(F.n*1.7)*0.05;}
+   a.anim={st:'rush',t:(e*3)%1,dur:1,melee:true};}
+  else if(e<P1+0.6){if(F.ph!=='slow'){F.ph='slow';HSTOP=0.55;flashA=0.7;CAM.shake=1.2;F.n=100;skyBolt(t,0xffffff,0.3);skyBolt(t,0x80e0ff,0.2);try{SFX2.explosion(true);}catch(_){}shockRing(hb.clone().setY(0.1),7,0x9ff0ff,0.6);sparks(c,0xffffff,40,7);leoHit(a,t,s.p*0.4,s.n,{t:'melee',sc:0xffffff,ic:0x80e0ff,k:'punch',kb:1.0});}
+   camLook(c.clone().add(new V3(-1.8,0.5,1.6)),c,3);}
+  else if(e<P1+1.6){if(F.ph!=='break'){F.ph='break';t.posO=null;
+    if(t.hp<=0){const m=model(t);for(let i=0;i<14;i++){const L=new T.Mesh(new T.PlaneGeometry(1.4,0.035),new T.MeshBasicMaterial({color:i%2?0xffffff:0x9ff0ff,transparent:true,depthTest:false,fog:false,side:T.DoubleSide}));L.renderOrder=20;L.position.copy(c).add(new V3((Math.random()-0.5)*0.5,(Math.random()-0.5)*0.9,0.3));L.lookAt(cam.position);L.rotateZ(Math.random()*PI);scene.add(L);C.objs.push(L);}
+     F.dust=1;}
+    else{t.stun=1;pop(t,t.boss?'STAGGERED!':'STUNNED!','#ffe040',true);log(`${t.name} is left staggered by the Hundred Thunder Fists!`);}}
+   if(F.dust&&e>P1+0.9&&F.dust===1){F.dust=2;const m=model(t);sparks(c,0xfff4c0,50,4);sparks(c,0x9ff0ff,40,3);for(let i=0;i<24;i++){const d=celSprite(orbTex(i%2?0xffffff:0x9ff0ff),0.22,0.22);d.position.copy(c).add(new V3((Math.random()-0.5)*0.9,(Math.random()-0.5)*1.2,(Math.random()-0.5)*0.6));scene.add(d);const v=new V3((Math.random()-0.2)*1.2,0.6+Math.random()*1.4,(Math.random()-0.5)*0.8);addFx({mesh:d,life:1.0,max:1.0,up:(g,dt2)=>{d.position.addScaledVector(v,dt2);d.material.opacity=g.life/g.max;}});}
+    C.objs.forEach(o=>{if(o.material)o.material.opacity=0;});if(m&&m.root)m.root.visible=false;log(`${t.name} breaks into nothing but sparkles!`);}}
+  });}});
+ T.at(0.05,()=>G(()=>{a.posO=hb.clone().add(new V3(-1.15,0,0.05));a.anim={st:'rush',t:0,dur:0.5,melee:true};try{SFX2.zap();}catch(_){}HSTOP=0.08;}));
+ T.at(P1+1.7,()=>G(()=>{drv.life=0;a.posO=null;t.posO=null;R.root.position.x=home(a).x;try{groundReset(t);}catch(_){}F.on=0;F.ph='done';window.__fists=Object.assign({},F,{on:0});cineEnd();}));
+ return P1+1.85;};
+// ---------- U1 Hangar Frames ----------
+const PARTS={arms:{hammer:{n:'Hammer Arms',d:'+25% ATK · Frame Strike smashes',atk:1.25,mv:{n:'Hammer Smash',t:'melee',p:2.4}},beam:{n:'Beam Arms',d:'+15% ATK · Frame Strike is a beam',atk:1.15,mv:{n:'Arm Beam',t:'beam',p:2.6}},shield:{n:'Shield Arms',d:'+40% DEF · Shield Bash',def:1.4,mv:{n:'Shield Bash',t:'melee',p:1.8}}},
+ legs:{sprint:{n:'Sprint Legs',d:'+30% SPD · Frame Rush',spd:1.3,mv:{n:'Sprint Rush',t:'melee',p:1.6}},tread:{n:'Tread Legs',d:'+30% DEF · Tread Stomp',def:1.3,mv:{n:'Tread Stomp',t:'melee',p:1.4,all:1}},jets:{n:'Jump Jets',d:'+15% SPD · Jet Kick',spd:1.15,mv:{n:'Jet Kick',t:'melee',p:1.9}}},
+ pack:{missile:{n:'Missile Pack',d:'Missile Rain hits all',mv:{n:'Missile Rain',t:'beam',p:1.3,all:1}},booster:{n:'Booster Pack',d:'Booster Lance: one big hit',mv:{n:'Booster Lance',t:'beam',p:2.9}},repair:{n:'Repair Pack',d:'Repair Field heals the team 25%',mv:{n:'Repair Field',t:'aura',p:0,all:1,heal:0.25}}}};
+window.FRAME_PARTS=PARTS;
+const gearNode=()=>NODES.findIndex(n=>PLANETS[n.planet]&&PLANETS[n.planet].n==='Gearhollow'&&n.boss);
+const framesOK=()=>!!(S&&(window.DEV_FRAMES||S.node>gearNode()));window.framesUnlocked=framesOK;
+const FS=()=>{S.fparts=S.fparts||{arms:['hammer'],legs:['sprint'],pack:['missile']};S.frames=S.frames||{};return S.fparts;};
+const cfg=id=>{FS();return S.frames[id]=S.frames[id]||{arms:S.fparts.arms[0],legs:S.fparts.legs[0],pack:S.fparts.pack[0]};};
+['arms','legs','pack'].forEach(sl=>SK['fr_'+sl]={n:'Frame '+sl,t:'beam',p:1,en:8,form:'any',hero:-1,frameMv:sl,cast:'fr_move'});
+SK.fr_call={n:'Frame Call',t:'aura',p:0,en:20,form:'any',hero:-1,all:1,frameCall:1,cast:'fr_call'};
+function frameMesh(h,on){G(()=>{const R=model(h);if(R._frame){R.root.remove(R._frame);R._frame=null;}if(!on)return;const c=cfg(h.id);const col=parseInt((HEROES[h.id].col||'#88aaff').slice(1),16);
+ const g=new T.Group();const A=new T.MeshToonMaterial({color:0xd8dee8}),B2=new T.MeshToonMaterial({color:col}),D=new T.MeshToonMaterial({color:0x3a4250}),GL=GLOW(0x80f0ff,0.9);const H=(R.h||1.7);
+ const bx=(w,h2,d,m,x,y,z)=>{const o=new T.Mesh(box(w,h2,d),m);o.position.set(x,y,z);g.add(o);return o;};
+ bx(0.7,0.45,0.8,A,0,H*0.55,0);bx(0.2,0.16,0.5,GL,0.36,H*0.57,0);[-1,1].forEach(sd=>{bx(0.1,0.34,0.1,B2,-0.22,H*0.92,sd*0.24);bx(0.06,0.06,0.06,GL,-0.22,H*1.1,sd*0.24);});
+ [-1,1].forEach(sd=>{bx(0.42,0.32,0.36,B2,0,H*0.78,sd*0.55);const arm=c.arms==='shield'?bx(0.12,0.7,0.6,A,0.2,H*0.45,sd*0.62):c.arms==='beam'?bx(0.55,0.18,0.18,D,0.25,H*0.5,sd*0.6):bx(0.36,0.36,0.36,D,0.15,H*0.42,sd*0.6);
+  if(c.arms==='beam')bx(0.1,0.1,0.1,GL,0.55,H*0.5,sd*0.6);
+  const leg=c.legs==='tread'?bx(0.7,0.3,0.32,D,0,0.15,sd*0.28):bx(0.3,H*0.42,0.26,A,0,H*0.21,sd*0.25);if(c.legs==='jets')bx(0.14,0.14,0.14,GL,-0.12,0.08,sd*0.25);});
+ if(c.pack==='missile'){for(let i=0;i<4;i++)bx(0.1,0.1,0.1,new T.MeshToonMaterial({color:0xff6040}),-0.48,H*0.66+(i%2)*0.14,(i<2?-0.12:0.12));bx(0.28,0.42,0.5,D,-0.42,H*0.66,0);}
+ else if(c.pack==='booster'){[-1,1].forEach(sd=>{bx(0.26,0.5,0.16,D,-0.45,H*0.62,sd*0.2);bx(0.1,0.16,0.12,GL,-0.6,H*0.38,sd*0.2);});}
+ else{bx(0.3,0.4,0.46,new T.MeshToonMaterial({color:0x60d080}),-0.44,H*0.66,0);bx(0.06,0.24,0.06,GL,-0.6,H*0.66,0);}
+ g.scale.setScalar(1.15);R.root.add(g);R._frame=g;});}
+window.frameMesh=frameMesh;
+Object.assign(CAST,{
+ fr_call(a,ts,s,T){B.banner={n:'HANGAR FRAME CALL',t:0,big:1};a.anim={st:'palm',t:0,dur:1.0,melee:false};
+  T.at(0.1,()=>G(()=>{camClose(a);columnFx(home(a),0x80f0ff);}));T.at(0.6,()=>G(()=>{flashA=0.5;CAM.shake=0.4;a.frame=3;frameMesh(a,true);try{SFX.morph();}catch(_){}pop(a,'FRAME ON!','#80f0ff',true);const c=cfg(a.id);log(`${a.name} boards a Hangar Frame (${PARTS.arms[c.arms].n}, ${PARTS.legs[c.legs].n}, ${PARTS.pack[c.pack].n}) for 3 turns!`);}));return 1.2;},
+ fr_move(a,ts,s,T){const c=cfg(a.id);const P=PARTS[s.frameMv][c[s.frameMv]];const mv=P.mv;const t=ts[0];a.anim={st:mv.t==='melee'?'spin':'palm',t:0,dur:0.9,melee:mv.t==='melee'};
+  if(mv.heal){T.at(0.3,()=>G(()=>{S.party.forEach(h=>{if(h.hp>0){const v=Math.round(h.mhp*mv.heal);h.hp=Math.min(h.mhp,h.hp+v);columnFx(home(h),0x60ff90);pop(h,'+'+v,'#4f8',true);}});drawParty();}));return 1.0;}
+  const tg=mv.all?alive(B.en):[t];if(mv.t==='melee'&&!mv.all)a.posO=home(t).add(new V3(-1.4,0,0.05));
+  tg.forEach((x,i)=>T.at(0.35+i*0.08,()=>G(()=>{if(mv.t==='beam')boltFx(center(a),center(x),0x80f0ff,0.1,0.3);sparks(center(x),0xd8dee8,14,5);leoHit(a,x,mv.p,mv.n,{t:mv.t,sc:0xffffff,ic:0x80f0ff});})));
+  T.at(0.85,()=>{a.posO=null;});return 1.0;}});
+const mvName=(h,sl)=>{const c=cfg(h.id);return PARTS[sl][c[sl]].mv;};
+const _sf=skillsFor;skillsFor=function(id,form){let r=_sf.apply(this,arguments);try{r=r.filter(k=>!SK[k]||!(SK[k].frameMv||SK[k].frameCall));const h=S&&S.party&&S.party.find(x=>x.id===id);if(h&&framesOK()){if(h.frame>0)r.push('fr_arms','fr_legs','fr_pack');else r.push('fr_call');}}catch(_){}return r;};
+// show the right move names/targets for frame moves
+const _act=act;act=function(a,s,targets){try{if(s&&s.frameMv&&!a.enemy){const mv=mvName(a,s.frameMv);s=Object.assign({},s,{n:mv.n,t:mv.t,p:mv.p,all:mv.all?1:0});if(mv.all||mv.heal)targets=alive(B.en);}}catch(_){}return _act.call(this,a,s,targets);};
+const _st=st;st=function(u,k){let v=_st.apply(this,arguments);try{if(u&&!u.enemy&&u.frame>0){const c=cfg(u.id);const m=[PARTS.arms[c.arms],PARTS.legs[c.legs]].reduce((x,p)=>x*(p[k]||1),1);v=Math.round(v*m);}}catch(_){}return v;};
+// frame turn countdown + reset
+const _cmd=commands;commands=function(h){try{if(B&&h.frame>0&&B._frId!==h.id+':'+B.round){B._frId=h.id+':'+B.round;if(h._frFresh)h._frFresh=0;else{h.frame--;if(!h.frame){frameMesh(h,false);log(`${h.name} ejects from the Hangar Frame.`);}}}}catch(_){}return _cmd.apply(this,arguments);};
+const _ac=CAST.fr_call;CAST.fr_call=function(a){a._frFresh=1;B._frId=a.id+':'+B.round;return _ac.apply(this,arguments);};
+const _sb=startBattle;startBattle=function(){try{(S&&S.party||[]).forEach(h=>{h.frame=0;frameMesh(h,false);});}catch(_){}return _sb.apply(this,arguments);};
+const _vc=victory;victory=function(){try{(S&&S.party||[]).forEach(h=>{h.frame=0;frameMesh(h,false);});
+  const n=NODES[S.node];if(n&&n.boss&&framesOK()){FS();const miss=[];['arms','legs','pack'].forEach(sl=>Object.keys(PARTS[sl]).forEach(k=>{if(!S.fparts[sl].includes(k))miss.push([sl,k]);}));if(miss.length){const [sl,k]=miss[Math.floor(Math.random()*miss.length)];S.fparts[sl].push(k);setTimeout(()=>G(()=>{log(`🛠 Frame part found: ${PARTS[sl][k].n}! Fit it in the Hangar.`);}),700);}}}catch(e){console.warn(e);}return _vc.apply(this,arguments);};
+function hangar(back,hid){FS();const ids=S.sel.slice();const id=hid!=null?hid:ids[0];const c=cfg(id);const it=[];
+ it.push({l:`👤 Pilot: <b>${HEROES[id].name}</b> <small>tap to switch hero</small>`,f:()=>hangar(back,ids[(ids.indexOf(id)+1)%ids.length])});
+ ['arms','legs','pack'].forEach(sl=>{const own=S.fparts[sl];const p=PARTS[sl][c[sl]];it.push({l:`${sl==='arms'?'🦾':sl==='legs'?'🦿':'🎒'} ${sl.toUpperCase()}: <b>${p.n}</b> <small>${p.d} · ${own.length} owned${own.length>1?' · tap to swap':''}</small>`,dis:own.length<2,f:()=>{c[sl]=own[(own.indexOf(c[sl])+1)%own.length];try{save();}catch(_){}hangar(back,id);}});});
+ menu(it,back,'HANGAR FRAMES');}
+window.hangar=hangar;
+const _map=map;map=function(){const r=_map.apply(this,arguments);G(()=>{if(framesOK()&&M&&M.items&&!M.items.some(i=>/Hangar Frames/.test(i.l||''))){const i=M.items.findIndex(x=>/Questboard/.test(x.l||''));M.items.splice(i>=0?i+1:M.items.length,0,{l:'🛠 Hangar Frames <small>fit arms · legs · pack</small>',f:()=>hangar(map)});drawMenu();}});return r;};
 })();
 
 </script>
