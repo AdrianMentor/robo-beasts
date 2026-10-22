@@ -3456,7 +3456,7 @@ function elemName(n){n=String(n||'').toLowerCase();
  if(/light|holy|star|radiant|prism|halo|nova|dawn|noon/.test(n))return 'light';
  if(/dark|void|shadow|soul|black hole|orb|hive|doom|ash|reap|night|matter/.test(n))return 'void';return null;}
 const PL_EL=['earth','fire','water','earth','water','fire','storm','void'];
-function elemOfEnemy(e){if(e._el!==undefined)return e._el;let k=(S&&NODES[S.node]&&PL_EL[NODES[S.node].planet])||elemName(e.name+' '+(e.base||''))||null;e._el=k;return k;}
+function elemOfEnemy(e){if(e._el!==undefined)return e._el;let k=e.el||(S&&NODES[S.node]&&PL_EL[NODES[S.node].planet])||elemName(e.name+' '+(e.base||''))||null;e._el=k;return k;}
 function elemOfSkill(s){if(!s)return null;if(s.elem)return s.elem;return elemName(s.n);}
 window.elemOfEnemy=elemOfEnemy;window.elemOfSkill=elemOfSkill;
 // ---- shields ----
@@ -3494,11 +3494,48 @@ const _sb=startBattle;startBattle=function(){let n=null,orig=null;try{n=NODES[S.
  try{if(B&&n&&!n.boss){B.family=FAM[n.planet];if(!window.NO_WAVE_RANDOM&&Math.random()<0.06){const g=B.en[Math.floor(Math.random()*B.en.length)];g.golden=1;g.name='Golden '+g.name;g.mhp=Math.round(g.mhp*1.5);g.hp=g.mhp;g.xp=(g.xp||10)*3;try{model(g).root.traverse(o=>{if(o.material&&o.material.color){o.material=o.material.clone();o.material.color.lerp(new THR.Color(0xffd040),0.55);}});}catch(_){}log(`A rare Golden ${g.name.slice(7)} appeared!`);}
    log(`Enemy family: ${B.family}.`);}B&&B.en.forEach(initShield);}catch(e){console.warn(e);}return r;};
 // ---- overlay: shield pips + element tag above enemies ----
-const _ov=overlay;overlay=function(dt){_ov.apply(this,arguments);try{if(sceneN!=='battle'||!B||CINE)return;cx.save();cx.font='bold 5px system-ui';cx.textAlign='center';
+const _ov=overlay;overlay=function(dt){_ov.apply(this,arguments);try{if(sceneN!=='battle'||!B||CINE)return;cx.save();cx.font='bold 7.5px system-ui';cx.textAlign='center';cx.lineWidth=2;cx.strokeStyle='rgba(0,0,0,.85)';
   B.en.forEach(e=>{if(e.hp<=0)return;initShield(e);let m;try{m=model(e);}catch(_){return;}if(!m||!m.root.visible)return;const p=proj(m.root.position.clone().add(new V3(0,(m.h||1.6)+0.1,0)));if(p.z>1)return;
-   const w=e.shM*5;for(let i=0;i<e.shM;i++){cx.fillStyle=e.broken?'#ffd040':i<e.sh?'#8fe8ff':'rgba(255,255,255,.18)';cx.fillRect(p.x-w/2+i*5,p.y+3,4,2.2);}
-   const el=elemOfEnemy(e);if(el){cx.fillStyle=ELS[el][1];cx.fillText(ELS[el][0],p.x,p.y+10);}if(e.boss&&(e.phase||1)>1){cx.fillStyle='#ff6060';cx.fillText('PHASE '+e.phase,p.x,p.y+16);}});
+   const w=e.shM*8;for(let i=0;i<e.shM;i++){cx.fillStyle='rgba(0,0,0,.7)';cx.fillRect(p.x-w/2+i*8-0.5,p.y+2.5,7,4.5);cx.fillStyle=e.broken?'#ffd040':i<e.sh?'#8fe8ff':'rgba(255,255,255,.2)';cx.fillRect(p.x-w/2+i*8,p.y+3,6,3.5);}
+   const el=elemOfEnemy(e);if(el){cx.strokeText(ELS[el][0],p.x,p.y+14);cx.fillStyle=ELS[el][1];cx.fillText(ELS[el][0],p.x,p.y+14);}if(e.boss&&(e.phase||1)>1){cx.strokeText('PHASE '+e.phase,p.x,p.y+22);cx.fillStyle='#ff6060';cx.fillText('PHASE '+e.phase,p.x,p.y+22);}});
   cx.restore();}catch(_){}};
+})();
+
+</script>
+<script>
+// ===== EXPANSION PHASE 3a: original monster families (new low-poly models), per-monster elements, readable shield/element tags =====
+(function(){
+const FLY=(R,body)=>{R.rot=[];return R;};
+function mon(type,h,build){const g=new T.Group(),R={type,root:g};const body=grp(g,0,type==='drone'?1.25:0.5,0);R.body=body;R.rot=[];R.legs=[];build(R,body);R.h=h;R.muzzle=grp(body,0.45,0.05,0);return finish(R);}
+const legs=(R,body,n,col,len=0.45,y=-0.05)=>{for(let i=0;i<n;i++){const s=i%2?1:-1;const x=-0.35+Math.floor(i/2)*(0.7/Math.max(1,Math.ceil(n/2)-1));const l=grp(body,x,y,s*0.28);part(cyl(0.05,0.035,len,6),TM(col),0,-len/2,s*0.06,l);R.legs.push(l);}};
+const MB={
+ hivescout:()=>mon('crawler',1.1,(R,b)=>{const M=TM(0x5a2a7a),D=TM(0x2a1238);part(cap(0.28,0.5,8),M,0,0.05,0,b).rotation.z=PI/2;part(sph(0.22,10,8),D,0.48,0.12,0,b);[-1,1].forEach(s=>{part(sph(0.06),GLOW(0x60ff90),0.64,0.18,s*0.1,b,false);const an=part(cyl(0.015,0.015,0.35,4),D,0.6,0.38,s*0.08,b);an.rotation.z=-0.5;const w=part(box(0.5,0.02,0.22),GLOW(0xc0a0ff,0.35),-0.05,0.32,s*0.22,b,false);w.rotation.x=s*0.4;});legs(R,b,6,0x2a1238,0.42,-0.05);}),
+ shielddrone:()=>mon('drone',1.6,(R,b)=>{part(sph(0.32,12,10),TM(0x4a3a6a),0,0,0,b);part(sph(0.1),GLOW(0x60ff90),0.3,0.04,0,b,false);const sh=part(cyl(0.5,0.5,0.05,6),GLOW(0x9a70ff,0.45),0.42,0,0,b,false);sh.rotation.z=PI/2;const r=part(tor(0.4,0.04),TM(0x2a1a40),0,0,0,b);r.rotation.x=PI/2;R.rot.push(r);}),
+ emberimp:()=>mon('drone',1.5,(R,b)=>{const M=TM(0xd04020);part(sph(0.3,12,10),M,0,0,0,b);[-1,1].forEach(s=>{const h=part(cone(0.07,0.28,6),TM(0x401008),0.05,0.3,s*0.15,b);h.rotation.x=s*0.35;part(sph(0.05),GLOW(0xffe040),0.27,0.06,s*0.1,b,false);const w=part(box(0.25,0.02,0.3),TM(0x802010),-0.1,0.1,s*0.32,b);w.rotation.x=s*0.6;});part(sph(0.18),GLOW(0xff8020,0.5),0,0.35,0,b,false);const t=part(cone(0.05,0.4,5),M,-0.35,-0.15,0,b);t.rotation.z=2.2;}),
+ tidewisp:()=>mon('drone',1.5,(R,b)=>{const M=new T.MeshToonMaterial({color:0x3aa0e8,transparent:true,opacity:0.85});part(sph(0.3,14,10),M,0,0,0,b);const tl=part(cone(0.28,0.6,12),M,0,-0.4,0,b);tl.rotation.z=PI;[-1,1].forEach(s=>part(sph(0.06),GLOW(0xe0ffff),0.26,0.06,s*0.1,b,false));const r=part(tor(0.42,0.025),GLOW(0x80e0ff,0.6),0,0,0,b,false);r.rotation.x=PI/2;R.rot.push(r);}),
+ gustkite:()=>mon('drone',1.6,(R,b)=>{const k=part(new T.OctahedronGeometry(0.4,0),TM(0xe8d040),0,0,0,b);k.scale.set(0.6,1,0.25);part(sph(0.07),GLOW(0x40c0ff),0.12,0.1,0,b,false);for(let i=0;i<4;i++){const t=part(box(0.08,0.08,0.02),TM(i%2?0x40a0ff:0xffffff),-0.1-i*0.06,-0.5-i*0.15,0,b);t.rotation.z=i*0.5;}}),
+ pebblebrute:()=>mon('crawler',1.4,(R,b)=>{const M=TM(0x8a7a60),D=TM(0x5a4a38);b.position.y=0.75;part(new T.DodecahedronGeometry(0.5,0),M,0,0.1,0,b);part(new T.DodecahedronGeometry(0.28,0),D,0.42,0.3,0,b);[-1,1].forEach(s=>{part(sph(0.05),GLOW(0x90ff60),0.66,0.34,s*0.09,b,false);const a=grp(b,0.1,0,s*0.5);part(new T.DodecahedronGeometry(0.2,0),D,0,-0.25,0,a);R.legs.push(a);const l=grp(b,-0.1,-0.35,s*0.25);part(new T.DodecahedronGeometry(0.17,0),D,0,-0.2,0,l);R.legs.push(l);});}),
+ cograt:()=>mon('crawler',1.0,(R,b)=>{const M=TM(0x8a909a);part(cap(0.2,0.45,8),M,0,0.05,0,b).rotation.z=PI/2;part(cone(0.16,0.3,8),M,0.45,0.05,0,b).rotation.z=-PI/2;[-1,1].forEach(s=>{part(cyl(0.09,0.09,0.03,8),TM(0x606670),0.32,0.22,s*0.12,b).rotation.x=PI/2;part(sph(0.04),GLOW(0xff4030),0.48,0.12,s*0.07,b,false);});const gear=part(new T.TorusGeometry(0.2,0.06,4,8),TM(0xd0a040),-0.05,0.3,0,b);R.rot.push(gear);const tail=part(cyl(0.02,0.01,0.6,4),TM(0x606670),-0.5,0.05,0,b);tail.rotation.z=1.2;legs(R,b,4,0x606670,0.3,-0.1);}),
+ sparkram:()=>mon('crawler',1.3,(R,b)=>{const M=TM(0xe8e0d0);b.position.y=0.65;part(cap(0.3,0.55,10),M,0,0,0,b).rotation.z=PI/2;const hd=grp(b,0.55,0.15,0);part(sph(0.2,10,8),TM(0x504858),0,0,0,hd);[-1,1].forEach(s=>{const h=part(new T.TorusGeometry(0.13,0.05,6,10,PI*1.4),GLOW(0xffe040,0.9),-0.02,0.08,s*0.16,hd,false);h.rotation.y=PI/2;part(sph(0.04),GLOW(0x40c0ff),0.17,0.04,s*0.08,hd,false);});legs(R,b,4,0x504858,0.5,-0.15);}),
+ pollenpuff:()=>mon('drone',1.3,(R,b)=>{const M=TM(0xf0e070);for(let i=0;i<7;i++){const a=i/7*PI*2;part(sph(0.18,8,6),M,Math.cos(a)*0.2,Math.sin(a)*0.2,(i%2-0.5)*0.15,b);}part(sph(0.24,10,8),TM(0xffffa0),0,0,0,b);[-1,1].forEach(s=>part(sph(0.045),TM(0x302010),0.24,0.05,s*0.08,b));const lf=part(box(0.05,0.3,0.12),TM(0x60b040),0,0.35,0,b);lf.rotation.z=0.3;}),
+ nullsprite:()=>mon('drone',1.5,(R,b)=>{part(sph(0.3,14,10),new T.MeshBasicMaterial({color:0x0a0410}),0,0,0,b);part(sph(0.36,14,10),GLOW(0x8a40ff,0.35),0,0,0,b,false);[-1,1].forEach(s=>part(sph(0.05),GLOW(0x40f0e0),0.27,0.05,s*0.1,b,false));const r=part(tor(0.5,0.02),GLOW(0x40f0e0,0.7),0,0,0,b,false);r.rotation.x=1.2;R.rot.push(r);}),
+};
+Object.keys(MB).forEach(k=>EBUILD[k]=MB[k]);
+const NEW={hivescout:{n:'Hive Scout',hp:34,atk:12,def:4,spd:14,eva:0.12,xp:10,el:'void'},shielddrone:{n:'Shield Drone',hp:52,atk:9,def:10,spd:7,eva:0.05,xp:11,el:'void'},
+ emberimp:{n:'Ember Imp',hp:32,atk:13,def:3,spd:15,eva:0.15,xp:10,el:'fire'},tidewisp:{n:'Tide Wisp',hp:36,atk:11,def:4,spd:12,eva:0.18,xp:10,el:'water'},
+ gustkite:{n:'Gust Kite',hp:30,atk:12,def:2,spd:18,eva:0.25,xp:10,el:'storm'},pebblebrute:{n:'Pebble Brute',hp:62,atk:14,def:11,spd:4,eva:0,xp:13,el:'earth'},
+ cograt:{n:'Cog Rat',hp:30,atk:11,def:5,spd:16,eva:0.15,xp:9,el:'storm'},sparkram:{n:'Spark Ram',hp:48,atk:15,def:6,spd:10,eva:0.05,xp:12,el:'storm'},
+ pollenpuff:{n:'Pollen Puff',hp:34,atk:10,def:3,spd:11,eva:0.2,xp:9,el:'earth'},nullsprite:{n:'Null Sprite',hp:38,atk:14,def:4,spd:13,eva:0.2,xp:12,el:'void'}};
+Object.assign(EN,NEW);window.NEW_MONSTERS=Object.keys(NEW);
+// per-monster elements for existing enemies too
+const EL0={vbrawl:'void',vblast:'void',vchief:'void',slagcrab:'earth',cinderwisp:'fire',magmaspit:'fire',pyrowyrm:'fire',reefling:'water',jellydrone:'water',spoutturret:'water',tidemaw:'water',vinecrawl:'earth',sporebat:'earth',thornturret:'earth',thorngolem:'earth',frostdrone:'water',icecrawl:'water',frostturret:'water',cryorex:'water',emberbat:'fire',magmacrawl:'fire',flameturret:'fire',magmatitan:'fire',drone:'storm',turret:'storm',golem:'earth',bat:'storm',boss:'storm',hivebrawl:'void',hiveblast:'void',vqueen:'void'};
+Object.entries(EL0).forEach(([k,v])=>{if(EN[k]&&!EN[k].el)EN[k].el=v;});
+const _eoe=window.elemOfEnemy;window.elemOfEnemy=function(e){if(e._el===undefined&&e.el)e._el=e.el;return _eoe(e);};
+// extra per-world family monsters for wave variety
+const XP={0:['hivescout','shielddrone'],1:['emberimp','pebblebrute'],2:['tidewisp','shielddrone'],3:['pollenpuff','pebblebrute'],4:['tidewisp','gustkite'],5:['emberimp','sparkram'],6:['cograt','gustkite','sparkram'],7:['hivescout','nullsprite','shielddrone']};
+window.WORLD_EXTRA=XP;
+const _sb=startBattle;startBattle=function(){let n=null,orig=null;try{n=NODES[S.node];if(n&&!n.boss&&!window.NO_WAVE_RANDOM&&XP[n.planet]){orig=n.e;const L=orig.slice();const k=Math.random()<0.55?1+Math.floor(Math.random()*2):0;for(let j=0;j<k;j++){const i=Math.floor(Math.random()*L.length);L[i]=XP[n.planet][Math.floor(Math.random()*XP[n.planet].length)];}n.e=L;}}catch(e){console.warn(e);}
+ try{return _sb.apply(this,arguments);}finally{if(n&&orig)n.e=orig;}};
 })();
 
 </script>
