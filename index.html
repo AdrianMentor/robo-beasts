@@ -3362,4 +3362,85 @@ CAST.d_titan=function(a,ts,s,T){const C=cineStart();C.objs=[];B.titanUsed=1;wind
  T.at(END,()=>{drv.life=0;window.__titan.ph='done';cineEnd();});return END+0.1;};
 })();
 </script>
+<script>
+// ===== EXPANSION PHASE 1: turn timeline (C1), status effects (C6), guard & counter (C5), chain gauge (C8), Mr. Normal guest (U4) =====
+(function(){
+const ST_IC={burn:['🔥','#ff8040'],stun:['💫','#ffe040'],freeze:['❄','#90e0ff'],shock:['⚡','#ffe060'],sleep:['💤','#c0b0ff'],mark:['☠','#d080ff'],def_:['🛡','#80c0ff']};
+const DUR={freeze:1,shock:2,sleep:2};
+function giveStatus(t,k,n){if(!t||t.hp<=0)return;t[k]=Math.max(t[k]||0,n||DUR[k]||1);const ic=ST_IC[k];try{pop(t,k.toUpperCase()+'!',ic[1],true);}catch(_){}try{log(`${t.name} is ${k==='shock'?'shocked':k==='sleep'?'asleep':k==='freeze'?'frozen':k}!`);}catch(_){}}
+window.giveStatus=giveStatus;
+const EL=n=>{n=String(n||'').toLowerCase();return /frost|ice|cryo|freez|blizz|snow|glacier/.test(n)?'freeze':/storm|thunder|lightning|volt|shock|spark|electr/.test(n)?'shock':/lullaby|dream|sleep|hypno/.test(n)?'sleep':null;};
+// ---- C6 status application + C5 guard/counter + C8 chain via calc ----
+const _calc=calc;calc=function(a,t,s){const r=_calc.apply(this,arguments);try{if(!r||r.miss||!B)return r;
+  if(t.shock>0)r.d=Math.round(r.d*1.25);
+  if(t.sleep>0){t.sleep=0;setTimeout(()=>{try{pop(t,'WOKE UP','#c0b0ff');}catch(_){}},120);}
+  if(!a.enemy){B.chain=Math.min(100,(B.chain||0)+6);const k=EL(s&&s.n);if(k&&!t.boss&&Math.random()<(k==='shock'?0.3:0.22))setTimeout(()=>giveStatus(t,k),180);}
+  else{B.chain=Math.max(0,(B.chain||0)-4);const k=EL(a.name+' '+(a.base||''));if(k==='freeze'&&Math.random()<0.15)setTimeout(()=>giveStatus(t,'freeze'),200);
+   if(t.def_&&t.hp>0)counterWindow(t,a);}
+ }catch(e){console.warn('p1 calc',e);}return r;};
+let CW=null;
+function counterWindow(h,e){if(CW)return;const until=performance.now()+750;CW={h,e,until,done:0};let el=document.getElementById('ctrTap');
+ if(!el){el=document.createElement('div');el.id='ctrTap';el.style.cssText='position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);font:900 34px system-ui;color:#fff;text-shadow:0 0 12px #3ef0ff,0 2px 0 #036;z-index:60;pointer-events:none;transition:opacity .15s';document.body.appendChild(el);}
+ el.textContent='TAP TO COUNTER!';el.style.opacity=1;
+ const fire=()=>{if(!CW||CW.done)return;CW.done=1;el.textContent='COUNTER!';setTimeout(()=>{el.style.opacity=0;},350);const c=CW;setTimeout(()=>{try{if(c.e.hp>0&&c.h.hp>0){leoHit(c.h,c.e,0.8,'Counter!',{sc:0x80e0ff,ic:0x40c0ff});SFX.ok&&SFX.ok();}}catch(err){console.warn(err);}},250);};
+ const tap=ev=>{if(CW&&performance.now()<=CW.until)fire();};window.addEventListener('pointerdown',tap,{capture:true,once:true});
+ if(typeof AUTO!=='undefined'&&AUTO&&Math.random()<0.5)setTimeout(fire,300);
+ setTimeout(()=>{window.removeEventListener('pointerdown',tap,{capture:true});if(CW&&!CW.done)el.style.opacity=0;CW=null;},800);}
+window.__counter=()=>CW;
+// ---- C6 status turn handling ----
+const _ea=enemyAct;enemyAct=function(e){try{if(e.shock>0)e.shock--;
+  if(e.freeze>0){e.freeze--;pop(e,'FROZEN','#90e0ff');log(`${e.name} is frozen solid!`);return setTimeout(endTurn,550);}
+  if(e.sleep>0){e.sleep--;pop(e,'Zzz','#c0b0ff');log(`${e.name} is fast asleep...`);return setTimeout(endTurn,550);}}catch(err){console.warn(err);}
+ return _ea.apply(this,arguments);};
+// ---- commands: frozen heroes skip; inject Team Finisher + Mr. Normal ----
+let inj=null;const _menu=menu;menu=function(items,back,title){if(inj){const h=inj;inj=null;try{
+  if((B.chain||0)>=100)items.unshift({l:'⚡ TEAM FINISHER <small>chain full</small>',f:()=>teamFinisher(h)});
+  if(normalReady())items.push({l:'📣 Call Mr. Normal <small>once per world</small>',f:()=>callNormal(h)});}catch(e){console.warn(e);}}
+ return _menu.apply(this,arguments);};
+const _cmd=commands;commands=function(h){try{if(h.shock>0)h.shock--;if(h.freeze>0){h.freeze--;pop(h,'FROZEN','#90e0ff');log(`${h.name} is frozen and loses a turn!`);busy=true;return setTimeout(endTurn,650);}}catch(_){}inj=h;const r=_cmd.apply(this,arguments);inj=null;return r;};
+// ---- C8 Team Finisher ----
+function teamFinisher(h){if(!B||(B.chain||0)<100)return;B.chain=0;busy=true;B.tmenu=false;$('menu').innerHTML='<h4>TEAM FINISHER</h4>';B.banner={n:'TEAM FINISHER',t:0,big:1};try{SFX2.charge();}catch(_){}
+ const team=alive(S.party);team.forEach((u,i)=>setTimeout(()=>{try{const foes=alive(B.en);if(!foes.length)return;flashA=0.3;CAM.shake=0.4;foes.forEach(e=>leoHit(u,e,0.9,'Team Finisher',{sc:0xffe080,ic:0xffc040}));atkCam&&atkCam(u,foes,4);}catch(e){console.warn(e);}},350+i*550));
+ setTimeout(()=>{try{endTurn();}catch(e){busy=false;}},350+team.length*550+700);}
+window.teamFinisher=teamFinisher;
+// ---- U4 Mr. Normal: comedic guest, once per world in boss fights ----
+function normalReady(){return !!(B&&S&&B.en.some(e=>e.boss&&e.hp>0)&&!((S.mrNormal||{})[NODES[S.node]&&NODES[S.node].planet]));}
+window.normalReady=normalReady;
+function mkNormal(){const g=new THR.Group();const Y=new THR.MeshToonMaterial({color:0xf4d040}),W=new THR.MeshToonMaterial({color:0xffffff}),SK=new THR.MeshToonMaterial({color:0xf2c9a0}),RD=new THR.MeshToonMaterial({color:0xd03030});
+ const P=(geo,m,x,y,z,par=g)=>{const o=new THR.Mesh(geo,m);o.position.set(x,y,z);par.add(o);return o;};
+ P(new THR.CapsuleGeometry(0.28,0.55,4,10),Y,0,1.05,0);P(new THR.SphereGeometry(0.26,16,12),SK,0,1.72,0);[-0.09,0.09].forEach(z=>P(new THR.SphereGeometry(0.025,6,4),new THR.MeshBasicMaterial({color:0x222222}),0.22,1.74,z));
+ P(new THR.BoxGeometry(0.02,0.015,0.12),new THR.MeshBasicMaterial({color:0x553322}),0.24,1.63,0);P(new THR.BoxGeometry(0.04,0.08,0.5),new THR.MeshToonMaterial({color:0x222222}),0,0.78,0);
+ [-0.14,0.14].forEach(z=>{P(new THR.CapsuleGeometry(0.1,0.45,4,8),Y,0,0.38,z);P(new THR.BoxGeometry(0.24,0.12,0.15),RD,0.05,0.06,z);});
+ const cape=P(new THR.BoxGeometry(0.04,0.95,0.6),W,-0.3,1.0,0);cape.rotation.z=0.15;
+ const armL=new THR.Group();armL.position.set(0,1.35,0.34);g.add(armL);P(new THR.CapsuleGeometry(0.08,0.4,4,8),Y,0,-0.25,0,armL);P(new THR.SphereGeometry(0.11,8,6),RD,0,-0.52,0,armL);
+ const armR=new THR.Group();armR.position.set(0,1.35,-0.34);g.add(armR);P(new THR.CapsuleGeometry(0.08,0.4,4,8),Y,0,-0.25,0,armR);P(new THR.SphereGeometry(0.11,8,6),RD,0,-0.52,0,armR);
+ g.userData={armR,armL};return g;}
+window.mkNormal=mkNormal;
+CAST.u_normal=function(a,ts,s,T){const t=ts[0];const C=cineStart();C.objs=[];window.__normal={ph:'walk'};B.banner={n:'MR. NORMAL ARRIVES',t:0,big:1};
+ const tp=home(t).clone(),hb=home(a);const fwd=tp.clone().sub(hb).setY(0).normalize();const side=new V3(-fwd.z,0,fwd.x);if(side.z<0)side.negate();
+ const hidP=S.party.map(u=>{const r=model(u).root;return [r,r.visible];});let hon=1;addFx({life:6,max:6,up:()=>{if(hon)hidP.forEach(([r])=>r.visible=false);}});C.cleanup=()=>{hon=0;hidP.forEach(([r,v])=>r.visible=v);};window.__N=null;const N=mkNormal();const st=tp.clone().addScaledVector(fwd,-4).addScaledVector(side,2.4).setY(0);const en=tp.clone().addScaledVector(side,1.5).setY(0);N.position.copy(st);const dN=tp.clone().sub(en).setY(0).normalize();N.rotation.y=Math.atan2(-dN.z,dN.x);scene.add(N);window.__N=N;C.objs.push(N);
+ const asp=()=>Math.max(0.35,Math.min(2.2,cam.aspect||1.5));const far=k=>k/Math.min(1,asp()*0.85);
+ const drv=addFx({life:1e9,max:1e9,up:()=>{if(window.__normal.ph==='done')return;const e=T.el();window.__normal.el=e;const U=N.userData;
+  if(e<1.4){const q=e/1.4;N.position.lerpVectors(st,en,q);N.position.y=Math.abs(Math.sin(e*9))*0.05;U.armL.rotation.z=Math.sin(e*9)*0.4;U.armR.rotation.z=-Math.sin(e*9)*0.4;camLook(N.position.clone().addScaledVector(side,far(5)).add(new V3(0,1.3,0)),N.position.clone().add(new V3(0,1.2,0)),5);}
+  else if(e<2.4){window.__normal.ph='punch';const q=Math.min(1,(e-1.4)/0.25);U.armR.rotation.z=-PI/2*q;U.armR.position.x=0.3*q;camLook(N.position.clone().lerp(tp,0.4).addScaledVector(side,far(5)).addScaledVector(fwd,-2.5).add(new V3(0,1.4,0)),N.position.clone().lerp(tp,0.4).add(new V3(0,1.1,0)),6);}
+  else{window.__normal.ph='after';U.armR.rotation.z*=0.9;camLook(en.clone().addScaledVector(side,far(4)).addScaledVector(fwd,1.2).add(new V3(0,1.5,0)),N.position.clone().add(new V3(0,1.6,0)),5);}}});
+ T.at(0.3,()=>{try{(window.speak||(()=>null))('LOCAL','Oh. Am I late? I was buying groceries.');}catch(_){}});
+ T.at(1.65,()=>{flashA=0.6;HSTOP=0.15;CAM.shake=1.4;try{SFX2.explosion(true);}catch(_){}try{shockRing(tp.clone().setY(0.1),14,0xffffff,0.7);}catch(_){}alive(B.en).forEach(e=>{try{e.hp=Math.min(e.hp,1);leoHit(a,e,1,'Regular Punch',{sc:0xffffff,ic:0xffe080});if(e.hp>0){e.hp=0;}pop(e,'REGULAR PUNCH','#ffe060',true);}catch(err){console.warn(err);}});});
+ T.at(2.6,()=>{try{(window.speak||(()=>null))('LOCAL','Huh. One punch again. Oh well. Sale ends at five!');}catch(_){}pop(a,'...WOW.','#ffe060',true);});
+ T.at(4.4,()=>{drv.life=0;window.__normal.ph='done';cineEnd();});return 4.5;};
+function callNormal(h){const pl=NODES[S.node].planet;S.mrNormal=S.mrNormal||{};S.mrNormal[pl]=1;try{save();}catch(_){}const t=B.en.find(e=>e.boss&&e.hp>0)||alive(B.en)[0];act(h,{n:'Call Mr. Normal',t:'sword',p:1,en:0,cast:'u_normal'},[t]);}
+window.callNormal=callNormal;
+// ---- C1 timeline + C8 chain bar + C6 status icons (drawn on the overlay canvas) ----
+const _ov=overlay;overlay=function(dt){_ov.apply(this,arguments);try{if(sceneN!=='battle'||!B||CINE)return;
+  const list=[B.cur].concat(B.queue||[]).filter(u=>u&&u.hp>0).slice(0,7);let x=200-list.length*14;cx.save();cx.font='bold 6px system-ui';cx.textAlign='center';
+  cx.fillStyle='rgba(4,12,28,.7)';cx.fillRect(x-4,3,list.length*28+8,17);cx.fillStyle='#9ab';cx.fillText('NEXT ▸',x-14,13);
+  list.forEach((u,i)=>{const cx0=x+i*28+12;cx.fillStyle=u.enemy?(u.boss?'#a02040':'#7a2a30'):(HEROES[u.id]&&HEROES[u.id].col)||'#2a6';cx.globalAlpha=i===0?1:0.8;cx.beginPath();cx.arc(cx0,11,i===0?7:6,0,PI*2);cx.fill();cx.globalAlpha=1;
+   if(i===0){cx.strokeStyle='#fff';cx.lineWidth=1;cx.stroke();}cx.fillStyle='#fff';cx.fillText(String(u.name||'?').replace(/^(The |Vorrex )/,'').slice(0,3).toUpperCase(),cx0,13);});
+  const ch=B.chain||0;cx.fillStyle='rgba(4,12,28,.7)';cx.fillRect(150,22,100,7);cx.fillStyle=ch>=100?'#ffe060':'#3ef0ff';cx.fillRect(151,23,98*ch/100,5);cx.fillStyle='#fff';cx.font='bold 5px system-ui';cx.fillText(ch>=100?'CHAIN FULL! TEAM FINISHER READY':'CHAIN '+ch+'%',200,27.5);
+  cx.font='7px system-ui';[...B.en,...S.party].forEach(u=>{if(!u||u.hp<=0)return;const ks=Object.keys(ST_IC).filter(k=>u[k]>0);if(!ks.length)return;let m;try{m=model(u);}catch(_){return;}if(!m||!m.root.visible)return;
+   const p=proj(m.root.position.clone().add(new V3(0,(m.h||1.6)+0.35,0)));if(p.z>1)return;ks.forEach((k,i)=>{cx.fillText(ST_IC[k][0],p.x+(i-(ks.length-1)/2)*8,p.y);});});
+  cx.restore();}catch(e){}};
+})();
+
+</script>
 <script>if("serviceWorker" in navigator&&location.protocol!=="file:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script></body></html>
