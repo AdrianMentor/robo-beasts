@@ -691,6 +691,23 @@ function humanKage(){const BK=0x14161e,NV=0x1e2636,TL=0x20f0d0;
  let clk=0;R.sim=dt=>{clk+=dt;R.scarf.forEach((g,i)=>{g.rotation.z=0.15+Math.sin(clk*5-i*0.8)*0.18;g.rotation.y=Math.sin(clk*3-i)*0.2;});if(R.visor)R.visor.material.opacity=0.75+0.25*Math.sin(clk*4);};
  return finish(R);}
 BUILD.human.push(humanKage);
+function humanSpark(){const WH=0xf4f6fa,TE=0x18b8c8,OR=0xff9a30;
+ const m={skin:TM(0xf2e4d8),top:TM(TE),sleeve:TM(WH),arm:TM(WH),bottom:TM(0x1a6a90),hand:TM(WH),foot:TM(OR)};
+ const R=rigHum({...HUMB,noFold:1,hr:0.3,th:0.3,tw:0.16,sw:0.21,ar:0.058,au:0.15,al:0.13,hand:0.09,legR:0.07,legU:0.16,legL:0.14,foot:[0.22,0.12,0.15],browC:0x2a3a4a,m});eyes(R,0x1aa0ff,1.35);R.hairDone=1;
+ const H=R.head,hr=0.3;
+ // rounded white helmet shell (back + top), ear disks, one glowing antenna bulb
+ const hel=part(new T.SphereGeometry(hr*1.06,20,14,0,PI*2,0,1.25),TM(WH),0,0,0,H,false);hel.rotation.z=0.42;
+ [-1,1].forEach(sd=>{const d=part(cyl(hr*0.32,hr*0.32,0.05,16),TM(TE),-hr*0.05,0,sd*hr*1.0,H);d.rotation.x=PI/2;part(cyl(hr*0.16,hr*0.16,0.06,12),GLOW(0x60f0ff,0.9),-hr*0.05,0,sd*hr*1.03,H,false).rotation.x=PI/2;});
+ part(cyl(0.012,0.012,0.16,6),TM(0x8a96a8),-hr*0.1,hr*1.1,0,H);const bulb=part(sph(0.045,10,8),GLOW(0xffd040,1),-hr*0.1,hr*1.2,0,H,false);R.bulb=bulb;
+ // chest plate + glowing heart core
+ const pl=part(sph(1,14,10),TM(WH),0.07,0.2,0,R.torso);pl.scale.set(0.12,0.13,0.15);
+ const core=part(sph(0.045,10,8),GLOW(0xff6a9a,1),0.17,0.22,0,R.torso,false);R.core=core;
+ // finger-laser tips + rocket boots
+ [R.aR,R.aL].forEach(a=>part(sph(0.022,8,6),GLOW(0x80f0ff,1),0.03,-0.17,0,a.h,false));R.muzzle=R.aR.h;
+ R.jets=[R.lR,R.lL].map(l=>{part(cyl(0.075,0.09,0.1,10),TM(OR),0,-0.02,0,l.f);const j=part(cone(0.06,0.22,8),GLOW(0x60d8ff,0.85),0,-0.15,0,l.f,false);j.rotation.x=PI;return j;});
+ let clk=0;R.sim=dt=>{clk+=dt;bulb.material.opacity=0.7+0.3*Math.sin(clk*5);core.scale.setScalar(1+0.15*Math.sin(clk*3));R.jets.forEach(j=>{j.scale.y=(R.fly?1.4:0.35)+0.15*Math.sin(clk*30);j.visible=!!R.fly||Math.sin(clk*2)>0.6;});};
+ return finish(R);}
+BUILD.human.push(humanSpark);
 // ================= ENGINE =================
 const gl=document.getElementById('gl'),ov=document.getElementById('ov'),cx=ov.getContext('2d');const $=id=>document.getElementById(id);
 const W=960,H=528;const RN=new T.WebGLRenderer({canvas:gl,antialias:true,powerPreference:'high-performance'});RN.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));RN.setSize(W,H,false);
@@ -895,6 +912,7 @@ const HEROES=[
  {name:'BABY',human:'The Baby',beast:'',col:'#ff9ae0',hp:1000000,en:2000,atk:1000,def:1000,spd:1000,single:1,fixedHP:1,basic:'b_basic'},
  {name:'ACE',human:'Ace',beast:'',col:'#8a40ff',hp:5000000,en:10000,atk:10000,def:10000,spd:10000,single:1,fixedHP:1,basic:'a_basic'}];
 HEROES.push({name:'DUKE',human:'Duke Calloway',beast:'',col:'#ffb040',hp:70,en:500,atk:300,def:300,spd:300,single:1,basic:'d_quick'},{name:'KAGE',human:'Kage Sora',beast:'',col:'#20f0d0',hp:66,en:500,atk:300,def:300,spd:300,single:1,basic:'k_slash'});
+HEROES.push({name:'SPARK',human:'Little Spark',beast:'',col:'#40d8e8',hp:62,en:500,atk:290,def:280,spd:320,single:1,basic:'sp_laser'});
 Object.assign(SK,{
  d_quick:{n:'Quick Draw',t:'beam',p:0.9,en:0,form:'human',hero:6,basic:1,crit:0.45,cast:'d_quick'},
  d_fan:{n:'Fan the Hammer',t:'beam',p:1.5,hits:6,en:10,form:'human',hero:6,cast:'d_fan'},
@@ -904,7 +922,11 @@ Object.assign(SK,{
  k_slash:{n:'Shadow Slash',t:'sword',p:0.95,en:0,form:'human',hero:7,basic:1,cast:'k_slash'},
  k_storm:{n:'Shuriken Storm',t:'sword',p:0.85,en:12,form:'human',hero:7,all:1,cast:'k_storm'},
  k_smoke:{n:'Smoke Vanish',t:'aura',p:0,en:6,form:'human',hero:7,all:1,cast:'k_smoke'},
- k_cuts:{n:'Thousand Cuts',t:'sword',p:3.2,en:30,form:'human',hero:7,cast:'k_cuts'}});
+ k_cuts:{n:'Thousand Cuts',t:'sword',p:3.2,en:30,form:'human',hero:7,cast:'k_cuts'},
+ sp_laser:{n:'Finger Laser',t:'beam',p:0.9,en:0,form:'human',hero:8,basic:1,cast:'sp_laser'},
+ sp_kind:{n:'Kind Circuit',t:'aura',p:0,en:14,form:'human',hero:8,all:1,cast:'sp_kind'},
+ sp_hop:{n:'Rocket Hop',t:'aura',p:0,en:6,form:'human',hero:8,all:1,cast:'sp_hop'},
+ sp_heart:{n:'Big Heart Blaster',t:'beam',p:2.4,en:28,form:'human',hero:8,cast:'sp_heart'}});
 const SINGLE=id=>!!HEROES[id].single;
 function skillsFor(id,form){return Object.entries(SK).filter(([k,s])=>!s.basic&&(id===1&&form==='beast'?(s.dragon||s.super):SINGLE(id)?(s.hero===id||s.super):((s.form===form||s.form==='any')&&(s.hero===undefined||s.hero===id)&&s.nohero!==id))).map(([k])=>k);}
 function basicFor(h){return h.id===1&&h.form==='beast'?SK.d_claw:SINGLE(h.id)?SK[HEROES[h.id].basic]:h.form==='robot'&&h.id===2?SK.l_laser:SK[h.form[0]+'_basic'];}
@@ -946,7 +968,7 @@ Object.assign(EN,{
  inksquid:M('Ink Squid','tidewisp',0x3a3060,56,17,6,13,0.15,18,'void'),pagephantom:M('Page Phantom','nullsprite',0xf0e8c8,52,18,5,15,0.2,18,'void'),
  shardscorpion:M('Shard Scorpion','crawler',0x90f0ff,64,18,10,8,0.06,19,'light'),glasshawk:M('Glass Hawk','gustkite',0xd8ffff,52,18,5,17,0.22,19,'light'),
  scrappirate:M('Scrap Pirate','vbrawl',0x8a5a30,68,19,9,10,0.08,20,'storm'),junkdrone:M('Junk Drone','drone',0x9a7a50,54,18,6,13,0.12,20,'storm')});
-const BO=(n,base,tint,scl,i,el)=>({n,base,tint,scl,hp:1000+i*130,atk:28+i*2,def:14+i,spd:9+(i%3),eva:0.04,xp:130+i*15,coin:90+i*10,beam:1,boss:1,el});
+const BO=(n,base,tint,scl,i,el)=>({n,base,tint,scl,hp:950+i*85,atk:40+i*5,def:14+i,spd:9+(i%3),eva:0.04,xp:130+i*15,coin:90+i*10,beam:1,boss:1,el});
 Object.assign(EN,{kilncolossus:BO('KILN COLOSSUS','golem',0xa04a20,1.5,0,'fire'),pearlmaw:BO('GRAND PEARLMAW','boss',0xe8e0ff,1.2,1,'water'),
  stormroc:BO('STORMCROWN ROC','bat',0xffd030,2.4,2,'storm'),twinreflect:BO('THE TWIN REFLECTION','vchief',0xc0e8ff,1.2,3,'void'),
  foreman9:BO('FOREMAN UNIT 9','golem',0xd0a020,1.55,4,'earth'),sugarbaron:BO('SUGAR BARON','vchief',0xff80c0,1.3,5,'light'),
@@ -1110,7 +1132,7 @@ function map(){sceneN='map';planetBG(NODES[S.node].planet);B=null;clearEnemies()
  menu([{l:`Sortie: ${n.n}`,f:()=>n.wave===1&&!window.SKIP_PARTY?((S.brief||{})[n.planet]||window.SKIP_STORY?partyScreen(map,startBattle):storyBrief(n.planet,()=>partyScreen(map,startBattle))):startBattle()},{l:'Starfall Titan Bridge <small>hub</small>',f:bridgeHub},{l:`Repair Bay ${S.rested?'<small>(used)</small>':'<small>(full heal)</small>'}`,dis:S.rested,f:()=>{S.party.forEach(h=>{h.hp=h.mhp;h.en=h.men;});S.rested=true;SFX.heal();log('Repair Bay: party fully restored.');save();map();}},
   {l:`Items <small>${Object.keys(ITEMS).reduce((a,k)=>a+(S.items[k]||0),0)} held</small>`,f:()=>itemMenu(null,map)},{l:`Shop <small>${S.coins||0} Big Coin</small>`,f:()=>shopMenu(map)},{l:`Party <small>${S.party.map(h=>h.name).join(' · ')}</small>`,f:()=>partyScreen(map)},{l:`Equip <small>${(S.inv||[]).length} in bag</small>`,f:()=>equipMenu(map)},{l:'Save Game',f:()=>{save();log('Progress saved.');}},{l:'Title Screen',f:title}],null,'HANGAR - STAGE '+(S.node+1)+'/'+NODES.length);}
 function startBattle(){const n=NODES[S.node];planetBG(n.planet);sceneN='battle';clearEnemies();const cnt={};
- B={en:n.e.map((k,i)=>{const d=EN[k];cnt[k]=(cnt[k]||0)+1;const sc=d.boss?1:1+S.node*0.045;const m=EBUILD[d.base||k]();if(d.tint)m.root.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshToonMaterial)o.material.color.lerp(new T.Color(d.tint),0.55);});if(d.scl)m.root.scale.multiplyScalar(d.scl);if(d.deco)seaDeco(m,d.deco);try{blockify(m.root);}catch(e){console.warn(e)}scene.add(m.root);EMS.push(m);
+ B={en:n.e.map((k,i)=>{const d=EN[k];cnt[k]=(cnt[k]||0)+1;const sc=d.boss?1:1+Math.min(S.node,32)*0.045+Math.max(0,S.node-32)*0.03;const m=EBUILD[d.base||k]();if(d.tint)m.root.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshToonMaterial)o.material.color.lerp(new T.Color(d.tint),0.55);});if(d.scl)m.root.scale.multiplyScalar(d.scl);if(d.deco)seaDeco(m,d.deco);try{blockify(m.root);}catch(e){console.warn(e)}scene.add(m.root);EMS.push(m);
   return Object.assign({},d,{enemy:1,key:d.base||k,m,name:d.n+(n.e.filter(x=>x===k).length>1?' '+'ABC'[cnt[k]-1]:''),mhp:Math.round(d.hp*sc*1.25),hp:Math.round(d.hp*sc*1.25),atk:Math.round(d.atk*sc*1.12),turns:0,slot:i});}),queue:[],cur:null,round:0};
  S.party.forEach(h=>{if(h.hp<=0)h.hp=1;h.def_=0;h.ko=0;h.buffA=0;h.buffD=0;h.anim=null;h.morph=null;});HM.forEach(o=>['human','beast','robot'].forEach(f=>{o[f].root.scale.setScalar(1);o[f].root.rotation.set(0,0,0);}));showHeroes(true);
  [...S.party].forEach(u=>animUnit(u,0,0));camDefault();logs=[];log(`Battle at ${n.n}! ${B.en.map(e=>e.name).join(', ')} appear!`);B.banner=n.boss?{n:'BOSS: '+(B.en.find(e=>e.boss)||B.en[0]).name,t:-0.3,big:1}:{n:`${PLANETS[n.planet].n.toUpperCase()} — WAVE ${n.wave}/3`,t:-0.3,big:1};SFX.morph();newRound();}
@@ -1172,7 +1194,8 @@ function enemyAct(e){if(e.mark>0)e.mark--;if(burnTick(e)){return setTimeout(endT
 function aceBossNode(){return NODES.findIndex(n=>n.planet===ACE_UNLOCK_PLANET&&n.boss);}
 function duoBossNode(){return NODES.findIndex(n=>n.planet===0&&n.boss);}
 function duoUnlocked(){return !!(S&&((S.unlocked&&S.unlocked.duo)||(S.node>duoBossNode())));}
-function heroLocked(id){return (id===5&&!aceUnlocked())||((id===6||id===7)&&!duoUnlocked());}
+function sparkUnlocked(){return !!(S&&((S.unlocked&&S.unlocked.spark)||(S.node>NODES.findIndex(n=>n.planet===7&&n.boss))));}
+function heroLocked(id){return (id===8&&!sparkUnlocked())||(id===5&&!aceUnlocked())||((id===6||id===7)&&!duoUnlocked());}
 window.DEV_UNLOCK_DUO=()=>{if(!S)return false;S.unlocked=Object.assign({},S.unlocked,{duo:1});save();return true;};
 function aceUnlocked(){return !!(S&&((S.unlocked&&S.unlocked.ace)||(S.node>aceBossNode())));}
 window.DEV_UNLOCK_ACE=()=>{if(!S)return false;S.unlocked=Object.assign({},S.unlocked,{ace:1});save();return true;};
@@ -1186,7 +1209,7 @@ function aceUnlockCut(done){const R=HM[5]&&HM[5].human;if(!R){done();return;}con
   if(R.crownGlow)R.crownGlow.material.opacity=q;if(!C.b&&t>2.2){C.b=1;B.banner={n:'ACE HAS JOINED!',t:0,big:1};flashA=0.5;CAM.shake=0.5;sparks(center({enemy:1,m:R}),0xffd040,30,3);log('ACE, King of the Dead, has joined your roster! Pick him in Squad.');}},
  ()=>{done();});}
 
-function victory(){busy=false;sceneN='victory';B.cur=null;const xp=B.en.reduce((s,e)=>s+e.xp,0)+5;SFX.win();camOn(S.party[0],7);
+function victory(){busy=false;sceneN='victory';B.cur=null;const xp=Math.round((B.en.reduce((s,e)=>s+e.xp,0)+5)*(NODES[S.node]&&NODES[S.node].planet>=8?1.3:1));SFX.win();camOn(S.party[0],7);
  let msg=[`+${xp} XP`];S.party.forEach(h=>{if(h.hp<=0)h.hp=1;h.xp+=xp;while(h.xp>=h.lvl*20){h.xp-=h.lvl*20;h.lvl++;syncForm(h);if(!HEROES[h.id].fixedHP){h.bhp+=9;h.mhp+=Math.round(9*FM[h.form]);}h.men+=3;h.atk+=2;h.def+=1;h.spd+=1;h.hp=Math.min(h.mhp,h.hp+20);h.en=Math.min(h.men,h.en+6);msg.push(`${h.name} reached LV ${h.lvl}!`);}});
  const drop=Math.random()<0.5?'kit':'cell';S.items[drop]++;msg.push(`Found ${drop==='kit'?'Repair Kit':'Energy Cell'}!`);if(Math.random()<0.35){const gid=rollGear(false);setTimeout(()=>giveGear(gid,'wave reward'),400);msg.push('Gear reward: '+GEAR[gid].n+'!');}B.vmsg=msg;msg.forEach(log);
  if(S.node>=NODES.length-1){sceneN='ending';try{localStorage.removeItem('robobeasts_save');}catch(e){}menu([{l:'The End - Title',f:title}]);drawParty();if(!window.SKIP_STORY)setTimeout(()=>storyEnding(title),1500);return;}
@@ -1290,9 +1313,9 @@ function camFollowY(t){if(!t)return;const c=center(t);if(c.y-0.3>CAM.tl.y){const
 function liftFx(t,dur){t.liftY=0;const g=home(t);const sh=new T.Mesh(new T.CircleGeometry(0.7,24),new T.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.5,depthWrite:false}));sh.rotation.x=-PI/2;sh.position.set(g.x,0.04,g.z);addFx({mesh:sh,life:dur,max:dur,up:f=>{sh.scale.setScalar(1-0.5*Math.min(1,t.liftY/3.2));}});
  let tr=0;addFx({life:dur,max:dur,up:f=>{const q=1-f.life/f.max;t.liftY=q<0.75?Math.sin(q/0.75*PI*0.5)*3.2:3.2*(1-(q-0.75)/0.25);camFollowY(t);if(q<0.75&&(tr++)%3===0){const ln=celSprite(lineTex?lineTex(0xfff0a0):ringTex(0xfff0a0),0.12,1.4);const c=center(t);ln.position.set(c.x+(Math.random()-0.5)*0.8,c.y-0.8,c.z+0.3);addFx({mesh:ln,life:0.2,max:0.2,up:k=>{ln.material.opacity=k.life/k.max;}});}if(f.life<=0){t.liftY=0;CAM.shake=0.4;aoeFx('stompS',{id:1},[]);}}});}
 // ---------- SUPER: tri-form chain ----------
-let SUPER=null;const SUPN=['WOLF-STORM TRINITY','SKYFALL TRINITY','TITAN TRINITY','CRIMSON TEMPEST','MOON CRASH','SOLAR REAPING','STARGUARD TITAN','THOUSAND CUTS'],SIG=['pack','d_xclaw','thrash'];
+let SUPER=null;const SUPN=['WOLF-STORM TRINITY','SKYFALL TRINITY','TITAN TRINITY','CRIMSON TEMPEST','MOON CRASH','SOLAR REAPING','STARGUARD TITAN','THOUSAND CUTS','BIG HEART BLASTER'],SIG=['pack','d_xclaw','thrash'];
 function setForm(a,f){HM[a.id][a.form].root.visible=false;a.form=f;const R=HM[a.id][f];R.root.visible=true;columnFx(home(a),parseInt(HEROES[a.id].col.slice(1),16));flashA=Math.max(flashA,0.35);SFX.morph();setFlash(R,1,0xddeeff);setTimeout(()=>setFlash(R,0),160);}
-function startSuper(a,s,targets){if(SINGLE(a.id))return castMove(a,SK[a.id===3?'n_super':a.id===5?'a_sun':a.id===6?((B&&B.titanUsed)?'d_gatling':'d_titan'):a.id===7?'k_cuts':'b_moon_s'],targets);SUPER={a,orig:a.form,stage:0,go:1,tg:targets[0]};B.banner={n:SUPN[a.id],t:0,big:1};superNext();}
+function startSuper(a,s,targets){if(SINGLE(a.id))return castMove(a,SK[a.id===3?'n_super':a.id===5?'a_sun':a.id===6?((B&&B.titanUsed)?'d_gatling':'d_titan'):a.id===7?'k_cuts':a.id===8?'sp_heart':'b_moon_s'],targets);SUPER={a,orig:a.form,stage:0,go:1,tg:targets[0]};B.banner={n:SUPN[a.id],t:0,big:1};superNext();}
 function superNext(){const S0=SUPER,a=S0.a;const tg=()=>{const t=S0.tg&&S0.tg.hp>0?S0.tg:alive(B.en)[0];S0.tg=t;return t?[t]:[];};
  if(alive(B.en).length===0||a.hp<=0||S0.stage>=3){setTimeout(()=>{if(a.form!==S0.orig)setForm(a,S0.orig);SUPER=null;log(`${a.name} completes ${SUPN[a.id]}!`);endTurn();},500);return;}
  const st=S0.stage++;busy=true;
@@ -1609,8 +1632,8 @@ function slotPick(h,sl,back){const cur=h.eq&&h.eq[sl];const ob=cur?GEAR[cur].b:{
  menu(ids.map(id=>({l:`${gearName(id)} <small style="color:${RAR[GEAR[id].r].c}">${RAR[GEAR[id].r].n}</small> x${S.inv.filter(x=>x===id).length}<br><small>${cmpB(GEAR[id].b,ob)}</small>`,f:()=>{equip(h,id);SFX.ok();heroEquip(h,back);}})).concat(cur?[{l:'Unequip '+GEAR[cur].n,f:()=>{unequip(h,sl);heroEquip(h,back);}}]:[]).concat(ids.length?[]:[{l:'<small>No '+SLOTN[sl]+' in inventory — win battles or visit the Shop</small>',dis:true,f:()=>{}}]),()=>heroEquip(h,back),SLOTN[sl].toUpperCase()+' · '+h.name);}
 
 // ---------- PARTY SCREEN & SWAP ----------
-const HICON=['🤖','🐉','🦁','🦇','👶','💀'];
-function heroCard(h,inP,locked){const H=HEROES[h.id];if(locked)return `<div class="pc lock" data-id="${h.id}"><div class="pp" style="background:#222">🔒</div><div class="pn">???</div><div class="ps">Defeat the ${PLANETS[ACE_UNLOCK_PLANET].n} boss to unlock</div></div>`;
+const HICON=['🤖','🐉','🦁','🦇','👶','💀','🤠','🥷','🚀'];
+function heroCard(h,inP,locked){const H=HEROES[h.id];if(locked)return `<div class="pc lock" data-id="${h.id}"><div class="pp" style="background:#222">🔒</div><div class="pn">???</div><div class="ps">Defeat the ${PLANETS[h.id===8?7:h.id>=6?0:ACE_UNLOCK_PLANET].n} boss to unlock</div></div>`;
  return `<div class="pc ${inP?'on':''}" data-id="${h.id}" style="--hc:${H.col}"><div class="pp" style="background:radial-gradient(circle at 35% 30%,#fff3,${H.col})">${HICON[h.id]||'★'}</div><div class="pn">${h.name}<small> LV ${h.lvl}</small></div><div class="ps">${H.human}${H.single?'':' · 3 forms'}<br>HP ${fN(h.mhp)} · EN ${fN(h.men)}<br>ATK ${fN(st(h,'atk'))} · DEF ${fN(st(h,'def'))} · SPD ${fN(st(h,'spd'))}</div><div class="pt">${inP?'IN PARTY':'BENCH'}</div></div>`;}
 function partyScreen(back,launch){let d=$('partyscr');if(!d){d=document.createElement('div');d.id='partyscr';document.body.appendChild(d);const st_=document.createElement('style');st_.textContent=`#partyscr{position:fixed;inset:0;z-index:9000;background:rgba(4,8,20,.94);color:#fff;font-family:system-ui,sans-serif;overflow:auto;padding:14px;box-sizing:border-box}#partyscr h2{margin:4px 0 2px;color:#5ef;font-size:20px}#partyscr .hint{font-size:12px;color:#9ab;margin-bottom:8px}#partyscr .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}#partyscr .pc{border:2px solid #345;border-radius:14px;padding:10px;background:#0c1428;cursor:pointer;position:relative;min-height:150px}#partyscr .pc.on{border-color:var(--hc);box-shadow:0 0 14px var(--hc)}#partyscr .pc.lock{opacity:.55;cursor:default}#partyscr .pp{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid #fff4}#partyscr .pn{font-weight:800;margin-top:6px}#partyscr .pn small{color:#9ab}#partyscr .ps{font-size:11px;color:#bcd;line-height:1.4}#partyscr .pt{position:absolute;top:8px;right:8px;font-size:10px;font-weight:800;padding:2px 6px;border-radius:8px;background:#234}#partyscr .pc.on .pt{background:var(--hc);color:#000}#partyscr .pbar{display:flex;gap:10px;position:sticky;top:-14px;margin:0 -14px 8px;padding:10px 14px;background:rgba(4,8,20,.97);z-index:9001}#partyscr .pbar button{all:unset;box-sizing:border-box;text-align:center;cursor:pointer;flex:1;height:48px;line-height:44px;padding:0 12px;border-radius:12px;border:2px solid #5ef;background:#0c2038;color:#fff;font-weight:800;font-size:15px}#partyscr button.go{background:#1a6a3a;border-color:#6f8}#partyscr .msg{color:#fc6;font-size:12px;min-height:16px}`;document.head.appendChild(st_);}
  const draw=(msg='')=>{d.style.display='block';d.innerHTML=`<h2>PARTY</h2><div class="hint">Tap a hero to add or remove them. The active party has up to 3 heroes; everyone else waits on the bench. (${S.sel.length}/3)</div><div class="pbar"><button id="pBack">◀ Back</button>${launch?'<button id="pGo" class="go">Launch ▶</button>':''}</div><div class="msg">${msg}</div><div class="grid">${S.roster.map(h=>heroCard(h,S.sel.includes(h.id),heroLocked(h.id))).join('')}</div>`;
@@ -1632,7 +1655,7 @@ function itemMenu(h,back){const keys=Object.keys(ITEMS);
 function useItem(h,it,p){S.items[it]--;const r=ITEMS[it].use(p);if(B&&sceneN==='battle'){pop(p,r,'#4f8',true);columnFx(home(p),0x60ff90);if(p.hp>0&&model(p))model(p).root.visible=true;}log(`${ITEMS[it].n}: ${p.name} ${r}`);SFX.heal();drawParty();save();if(sceneN==='battle'&&h)endTurn();else if(sceneN==='battle')commands(B.cur);else map();}
 function shopMenu(back){const keys=Object.keys(ITEMS);
  menu(keys.map(k=>({l:`${ITEMS[k].n} <small>${ITEMS[k].pr} ◉ · own ${S.items[k]||0} · ${ITEMS[k].d}</small>`,dis:(S.coins||0)<ITEMS[k].pr,f:()=>{S.coins-=ITEMS[k].pr;S.items[k]=(S.items[k]||0)+1;SFX.ok();log(`Bought ${ITEMS[k].n} for ${ITEMS[k].pr} Big Coin.`);save();drawParty();shopMenu(back);}})).concat(Object.keys(GEAR).filter(k=>GEAR[k].pr).map(k=>({l:`${gearName(k)} <small style="color:${RAR[GEAR[k].r].c}">${RAR[GEAR[k].r].n} ${SLOTN[GEAR[k].s]}</small> <small>${GEAR[k].pr} ◉ · ${fmtB(GEAR[k].b)}</small>`,dis:(S.coins||0)<GEAR[k].pr,f:()=>{S.coins-=GEAR[k].pr;S.inv=S.inv||[];S.inv.push(k);SFX.ok();log(`Bought ${GEAR[k].n}.`);save();drawParty();shopMenu(back);}}))),back,'SHOP · '+(S.coins||0)+' BIG COIN');}
-function squadMenu(back){const sel=S.sel.slice();const draw=()=>menu(S.roster.map(h=>heroLocked(h.id)?{l:`🔒 ${h.id===5?ACE_SIL:'⭐'} <b style="color:#555">??? </b><small>Defeat the ${PLANETS[h.id===5?ACE_UNLOCK_PLANET:0].n} boss to unlock</small>`,dis:true,f:()=>{}}:({l:`${sel.includes(h.id)?'☑':'☐'} ${h.name} <small>${HEROES[h.id].human} · LV ${h.lvl}${HEROES[h.id].single?' · '+(h.id===3?'lightning vampire':h.id===5?'grim reaper king':h.id===6?'space ranger cowboy':h.id===7?'cyber ninja':'psychic baby'):' · 3 forms'}</small>`,f:()=>{const i=sel.indexOf(h.id);if(i>=0){if(sel.length>1)sel.splice(i,1);}else{if(sel.length>=3)sel.shift();sel.push(h.id);}draw();}})).concat([{l:`✔ Confirm squad (${sel.length}/3)`,dis:sel.length<1,f:()=>{S.sel=sel.slice();S.party=S.sel.map(id=>S.roster[id]);save();log('Squad: '+S.party.map(h=>h.name).join(', '));map();}}]),back,'CHOOSE SQUAD (max 3)');draw();}
+function squadMenu(back){const sel=S.sel.slice();const draw=()=>menu(S.roster.map(h=>heroLocked(h.id)?{l:`🔒 ${h.id===5?ACE_SIL:'⭐'} <b style="color:#555">??? </b><small>Defeat the ${PLANETS[h.id===5?ACE_UNLOCK_PLANET:h.id===8?7:0].n} boss to unlock</small>`,dis:true,f:()=>{}}:({l:`${sel.includes(h.id)?'☑':'☐'} ${h.name} <small>${HEROES[h.id].human} · LV ${h.lvl}${HEROES[h.id].single?' · '+(h.id===3?'lightning vampire':h.id===5?'grim reaper king':h.id===6?'space ranger cowboy':h.id===7?'cyber ninja':h.id===8?'kind little android':'psychic baby'):' · 3 forms'}</small>`,f:()=>{const i=sel.indexOf(h.id);if(i>=0){if(sel.length>1)sel.splice(i,1);}else{if(sel.length>=3)sel.shift();sel.push(h.id);}draw();}})).concat([{l:`✔ Confirm squad (${sel.length}/3)`,dis:sel.length<1,f:()=>{S.sel=sel.slice();S.party=S.sel.map(id=>S.roster[id]);save();log('Squad: '+S.party.map(h=>h.name).join(', '));map();}}]),back,'CHOOSE SQUAD (max 3)');draw();}
 
 // ---------- VICTORY CELEBRATIONS + LOCALS THANK-YOU CUTSCENES ----------
 let CUT=null;
@@ -3626,6 +3649,77 @@ LOCALS.push(...[['ash-folk',0x8a7a70,0xff8a40,'horn','The ash mines are ours aga
 if(window.PL_EL)window.PL_EL.push('fire','water','storm','void','earth','light','water','void','light','storm');
 if(window.FAM)Object.assign(window.FAM,{8:'Elementals',9:'Elementals',10:'Wild Fauna',11:'Mirror Kin',12:'Scrap Machines',13:'Sweet Critters',14:'Wild Fauna',15:'Archive Spirits',16:'Crystal Beasts',17:'Scrap Machines'});
 if(window.WORLD_EXTRA)Object.assign(window.WORLD_EXTRA,{8:['emberimp'],9:['tidewisp'],10:['gustkite','sparkram'],11:['nullsprite'],12:['cograt','shielddrone'],13:['pollenpuff'],14:['pebblebrute'],15:['tidewisp','nullsprite'],16:['hivescout'],17:['cograt','junkdrone']});
+})();
+
+</script>
+<script>
+// ===== PHASE 3c: Little Spark (U7), Questboard + Blobbits (U3), Act 2 Copy Core chips =====
+(function(){
+// ---- Act 2 Copy Core chips (one per Act 2 boss) ----
+const C2=[['kiln','Kiln Blast','fire'],['pearl','Pearl Burst','water'],['crown','Crown Bolt','storm'],['mirror','Mirror Shard','void'],['rivet','Rivet Rain','earth'],['sugar','Sugar Rush','light'],['avalanche','Avalanche Drop','water'],['ink','Ink Wave','void'],['prism','Prism Ray','light'],['hook','Crank Hook','storm']];
+if(window.COPY_CHIPS){C2.forEach(c=>{window.COPY_CHIPS.push(c);SK['chip_'+c[0]]={n:c[1]+' (Chip)',t:'beam',p:1.9,en:12,form:'any',hero:-1,chip:1,elem:c[2],st:'beam'};});}
+// ---- Little Spark moves ----
+const low=a=>S.party.filter(h=>h!==a&&h.hp>0&&h.hp<h.mhp*0.5).length;
+const zap=(a,t,col,n,dl)=>{for(let k=0;k<n;k++){const o=celSprite(orbTex(col),0.35,0.35);const p0=center(a).add(new V3(0.35,0.15,0));o.position.copy(p0);scene.add(o);let q=0;const d=dl+k*0.07;addFx({mesh:o,life:0.6+d,max:0.6+d,up:(f,dt)=>{if((f.max-f.life)<d)return;q=Math.min(1,q+dt*4);o.position.lerpVectors(p0,center(t),q);if(q>=1)f.life=0;}});}};
+Object.assign(CAST,{
+ sp_laser(a,ts,s,T){const t=ts[0];a.anim={st:'palm',t:0,dur:0.6,melee:false};const bonus=1+0.25*low(a);zap(a,t,0x60f0ff,2,0.1);
+  T.at(0.38,()=>{try{SFX2.zap();}catch(_){}leoHit(a,t,s.p*bonus,s.n,{t:'beam',sc:0x9ff8ff,ic:0x40d8e8});if(bonus>1)pop(a,'BRAVE!','#ff8ab0');});return 0.8;},
+ sp_kind(a,ts,s,T){a.anim={st:'palm',t:0,dur:0.9,melee:false};T.at(0.2,()=>{try{SFX.heal();}catch(_){}B.banner={n:'KIND CIRCUIT',t:0};
+   S.party.forEach(h=>{if(h.hp<=0)return;const v=Math.round(h.mhp*0.3);h.hp=Math.min(h.mhp,h.hp+v);try{columnFx(home(h),0x60f0c0);}catch(_){}pop(h,'+'+v,'#4f8',true);});log('Little Spark shares his Kind Circuit: the team heals 30%!');drawParty();});return 1.1;},
+ sp_hop(a,ts,s,T){const R=model(a);a.anim={st:'palm',t:0,dur:0.8,melee:false};R.fly=1;a.posO=home(a).add(new V3(0,1.1,0));a.evade=1;pop(a,'ROCKET HOP','#40d8e8',true);log('Little Spark rockets up: the next attack on him will miss!');try{SFX2.wind();}catch(_){}
+  T.at(0.7,()=>{a.posO=null;R.fly=0;});return 0.9;},
+ sp_heart(a,ts,s,T){const t=ts[0];const R=model(a);R.fly=1;const L=low(a);const mult=1+0.5*L;B.banner={n:'BIG HEART BLASTER'+(L?' ×'+mult.toFixed(1):''),t:0,big:1};a.anim={st:'palm',t:0,dur:1.6,melee:false};a.posO=home(a).add(new V3(0.3,0.7,0));
+  T.at(0.1,()=>{try{camClose(a);}catch(_){}flashA=0.3;});
+  T.at(0.6,()=>{zap(a,t,0xff6a9a,6,0);try{boltFx(center(a),center(t),0xff6a9a,0.14,0.5);}catch(_){}});
+  T.at(1.05,()=>{CAM.shake=0.7;try{SFX2.explosion(false);}catch(_){}sparks(center(t),0xff8ab0,30,5);leoHit(a,t,s.p*mult,s.n,{t:'beam',sc:0xffc0d8,ic:0xff6a9a});});
+  T.at(1.5,()=>{a.posO=null;R.fly=0;});return 1.7;}});
+// ---- Blobbits (4th helper) ----
+const BLOBS={blue:{n:'Blue Blobbit',c:0x50a8ff,sk:'Bubble Mend',d:'heals the team 6% each round'},metal:{n:'Metal Blobbit',c:0xb8c0cc,sk:'Pebble Bonk',d:'bonks a foe and chips a shield pip'},king:{n:'King Blobbit',c:0xffd040,sk:'Royal Cheer',d:'+10% EN each round and a small heal'}};
+window.BLOBS=BLOBS;
+let mesh=null;function blobMesh(k){if(mesh){scene.remove(mesh);mesh=null;}if(!k)return;const c=BLOBS[k].c;const g=new T.Group();const b=new T.Mesh(sph(0.32,16,12),new T.MeshToonMaterial({color:c}));b.scale.set(1,0.85,1);b.position.y=0.27;g.add(b);
+ [-1,1].forEach(sd=>{const e=new T.Mesh(sph(0.055,8,6),new T.MeshBasicMaterial({color:0x101018}));e.position.set(0.26,0.36,sd*0.1);g.add(e);const w=new T.Mesh(sph(0.02,6,4),new T.MeshBasicMaterial({color:0xffffff}));w.position.set(0.3,0.38,sd*0.1+0.02);g.add(w);});
+ const sm=new T.Mesh(new T.TorusGeometry(0.06,0.012,4,10,PI),new T.MeshBasicMaterial({color:0x101018}));sm.position.set(0.3,0.26,0);sm.rotation.set(0,PI/2,PI);g.add(sm);
+ if(k==='king'){const cr=new T.Mesh(cyl(0.12,0.1,0.1,5),GLOW(0xffe060,1));cr.position.y=0.6;g.add(cr);}if(k==='metal'){const r=new T.Mesh(new T.TorusGeometry(0.25,0.03,6,16),new T.MeshToonMaterial({color:0x6a7280}));r.rotation.x=PI/2;r.position.y=0.27;g.add(r);}
+ g.position.set(-5.6,0,1.9);let t0=0;b.onBeforeRender=()=>{t0+=0.016;const k2=Math.abs(Math.sin(t0*3));g.position.y=k2*0.18;b.scale.set(1+0.08*(1-k2),0.85-0.08*(1-k2),1+0.08*(1-k2));};scene.add(g);mesh=g;}
+function blobAct(){const k=S.blob;if(!k||!B||!S.blobs||!S.blobs.includes(k))return;const nm=BLOBS[k].n;
+ if(mesh){const g=mesh;let q=0;addFx({life:0.5,max:0.5,up:(f,dt)=>{q+=dt;g.position.y=Math.sin(q/0.5*PI)*0.7;}});}
+ if(k==='blue'||k==='king'){const pc=k==='blue'?0.06:0.03;S.party.forEach(h=>{if(h.hp>0&&h.hp<h.mhp){const v=Math.max(1,Math.round(h.mhp*pc));h.hp=Math.min(h.mhp,h.hp+v);pop(h,'+'+v,'#4f8');}});}
+ if(k==='king')S.party.forEach(h=>{if(h.hp>0)h.en=Math.min(h.men,h.en+Math.round(h.men*0.1));});
+ if(k==='metal'){const es=alive(B.en);if(es.length){const e=es[Math.floor(Math.random()*es.length)];const d=Math.max(1,Math.round(e.mhp*(e.boss?0.02:0.06)));e.hp=Math.max(1,e.hp-d);pop(e,String(d),'#ccd');if(e.sh>0&&!e.broken)e.sh--;}}
+ log(`${nm} uses ${BLOBS[k].sk}!`);try{drawParty();}catch(_){}}
+const _nr=newRound;newRound=function(){try{if(B&&B.round>=1)blobAct();}catch(e){console.warn('blob',e);}return _nr.apply(this,arguments);};
+const _sb=startBattle;startBattle=function(){const r=_sb.apply(this,arguments);try{blobMesh(S&&S.blobs&&S.blobs.includes(S.blob)?S.blob:null);}catch(e){console.warn(e);}return r;};
+const _ce=clearEnemies;clearEnemies=function(){try{blobMesh(null);}catch(_){}return _ce.apply(this,arguments);};
+// ---- Questboard ----
+const QUESTS=[{k:'q_pest',n:'Pest Control',d:'Defeat 15 enemies',stat:'kills',goal:15,rew:{blob:'blue',coins:40}},
+ {k:'q_flaw',n:'Not a Scratch',d:'Win 3 battles with nobody knocked out',stat:'flaw',goal:3,rew:{blob:'metal',coins:60}},
+ {k:'q_waves',n:'Wave Rider',d:'Win 10 battles',stat:'wins',goal:10,rew:{gear:1,coins:80}},
+ {k:'q_boss',n:'Big Game',d:'Defeat 2 bosses',stat:'boss',goal:2,rew:{blob:'king',coins:120}},
+ {k:'q_crit',n:'Shield Breaker',d:'Break 8 enemy shields',stat:'breaks',goal:8,rew:{gear:1,coins:100}},
+ {k:'q_long',n:'Frontier Hero',d:'Win 40 battles',stat:'wins',goal:40,rew:{gear:2,coins:300}}];
+window.QUESTS=QUESTS;
+const Q=()=>{S.qs=S.qs||{kills:0,flaw:0,wins:0,boss:0,breaks:0,done:{}};S.qs.done=S.qs.done||{};return S.qs;};
+const _vic=victory;victory=function(){try{const q=Q();const n=NODES[S.node];q.wins++;q.kills+=B.en.length;if(!S.party.some(h=>h.hp<=0||h.ko))q.flaw++;if(n&&n.boss)q.boss++;q.breaks+=(B._breaks||0);
+  const ready=QUESTS.filter(x=>!q.done[x.k]&&q[x.stat]>=x.goal).length;if(ready)setTimeout(()=>{try{log(`📜 ${ready} quest${ready>1?'s':''} ready to claim on the Questboard!`);}catch(_){}},900);}catch(e){console.warn(e);}return _vic.apply(this,arguments);};
+setInterval(()=>{try{if(B&&B.en)B.en.forEach(e=>{if(e.broken&&!e._cntBrk){e._cntBrk=1;B._breaks=(B._breaks||0)+1;}});}catch(_){}},250);
+function claim(x){const q=Q();if(q.done[x.k])return;q.done[x.k]=1;const r=x.rew;S.coins=(S.coins||0)+(r.coins||0);let msg=`Quest complete: ${x.n}! +${r.coins||0} Big Coin`;
+ if(r.blob){S.blobs=S.blobs||[];if(!S.blobs.includes(r.blob))S.blobs.push(r.blob);if(!S.blob)S.blob=r.blob;msg+=` · ${BLOBS[r.blob].n} joins as your helper!`;}
+ for(let i=0;i<(r.gear||0);i++){try{giveGear(rollGear(true),'quest reward');}catch(_){}}
+ try{SFX.win();}catch(_){}log(msg);try{save();}catch(_){}}
+function questboard(back){const q=Q();const items=QUESTS.map(x=>{const v=Math.min(x.goal,q[x.stat]||0),dn=q.done[x.k],rd=!dn&&v>=x.goal;const rw=(x.rew.blob?BLOBS[x.rew.blob].n+' · ':'')+(x.rew.gear?'gear · ':'')+x.rew.coins+'◉';
+  return {l:`${dn?'✅':rd?'🎁':'📜'} ${x.n} <small>${x.d} · ${v}/${x.goal} · ${dn?'claimed':rd?'CLAIM: ':'reward: '}${rw}</small>`,dis:!rd,f:()=>{claim(x);questboard(back);}};});
+ const own=S.blobs||[];items.push({l:`🫧 Helper: <b>${S.blob&&own.includes(S.blob)?BLOBS[S.blob].n:'none'}</b> <small>${own.length?(S.blob&&own.includes(S.blob)?BLOBS[S.blob].sk+': '+BLOBS[S.blob].d:'tap to pick')+' · tap to switch':'earn Blobbits from quests'}</small>`,dis:!own.length,f:()=>{const L=[null,...own];S.blob=L[(L.indexOf(S.blob||null)+1)%L.length];try{save();}catch(_){}questboard(back);}});
+ menu(items,back,'QUESTBOARD');}
+window.questboard=questboard;
+
+function sparkCatchUp(){try{if(!S||S.sparkLv||heroLocked(8))return;const h=S.roster.find(x=>x.id===8);if(!h)return;S.sparkLv=1;const tgt=Math.max(1,Math.max(...S.roster.filter(x=>x.id!==8).map(x=>x.lvl||1))-1);while(h.lvl<tgt){h.lvl++;h.mhp+=9;h.bhp=(h.bhp||h.mhp-9)+9;h.men+=3;h.atk+=2;h.def+=1;h.spd+=1;}h.hp=h.mhp;h.en=h.men;try{save();}catch(_){}}catch(e){console.warn(e);}}
+window.sparkCatchUp=sparkCatchUp;
+const _map=map;map=function(){sparkCatchUp();const r=_map.apply(this,arguments);try{if(M&&M.items&&!M.items.some(i=>/Questboard/.test(i.l||''))){const i=M.items.findIndex(x=>/Repair Bay/.test(x.l||''));const q=Q();const rd=QUESTS.filter(x=>!q.done[x.k]&&q[x.stat]>=x.goal).length;
+  M.items.splice(i>=0?i+1:M.items.length,0,{l:`📜 Questboard <small>${rd?rd+' ready!':'side quests · Blobbits'}</small>`,f:()=>questboard(map)});drawMenu();}}catch(e){console.warn(e);}return r;};
+// ---- story: Little Spark joins at the end of Act 1, Act 2 banter ----
+if(typeof act1End==='function'){const _a1=act1End;act1End=function(){const L=_a1();L.splice(L.length-1,0,{who:8,t:'H-hello! I am Little Spark. I was built in the Hive, but I never wanted to hurt anyone. Can I come with you?'},{who:4,t:'*happy giggle* A new friend! He can be my brother!'},{who:8,t:'A brother? ...I would like that very much.'});return L;};}
+[[8,'The workers said thank you to me too! Nobody ever said that before.'],[8,'The merfolk taught me a song. Beep boop la la!'],[8,'My rocket boots almost got struck by lightning. Almost!'],[8,'My reflection waved. I waved back. Was that okay?'],[8,'This factory... feels like home a little. A good home now.'],[8,'The Baby shared her gumdrops with me! I saved one for later.'],[8,'My circuits were cold but my heart core kept me warm.'],[8,'I read a book! It was about a brave robot. Like me?'],[8,'Rainbows everywhere! The Baby says I am her favorite. Shh.']].forEach((ln,i)=>{const b=BANTER[8+i];if(b)b.push(ln);});
+if(BANTER[7])BANTER[7].push([8,'I will try my very best. I promise.']);
 })();
 
 </script>
