@@ -1094,7 +1094,7 @@ function resetHum(R,stance){const s=stance;R.hips.position.y=R.hips.userData.y0?
  R.lR.h.rotation.set(0,0,s?0.35:0.05);R.lR.k.rotation.set(0,0,s?-0.55:-0.1);R.lL.h.rotation.set(0,0,s?-0.3:-0.05);R.lL.k.rotation.set(0,0,s?-0.35:-0.1);R.lR.f.rotation.set(0,0,0);R.lL.f.rotation.set(0,0,0);}
 function animUnit(u,dt,t){const m=model(u),R=m,root=m.root;if(!root.visible&&!u.morph)return;const hm=home(u);const A=u.anim;const dir=u.enemy?-1:1;
  let pos=hm.clone(),y=0,ry=u.enemy?PI+0.5:-0.5,rz=0;const human=!u.enemy&&u.form==='human';
- if(R.type==='hum')resetHum(R,human);if(R.type==='hum'&&u.id===4&&!u.enemy&&R.fist)R.fist(A||(typeof CINE!=='undefined'&&CINE)?0:0.35);
+ if(R.type==='hum')resetHum(R,human);if(R.type==='hum'&&u.id===4&&!u.enemy&&R.fist)R.fist(A||(typeof CINE!=='undefined'&&CINE)?0:1);
  const idle=t*(human?5:2.5)+(u.id||u.slot||0);
  if(R.type==='hum'){R.hips.position.y+=Math.sin(idle)*(human?0.025:0.015);R.torso.rotation.z=human?0.12:0.02;R.neck.rotation.z=human?-0.1:0;R.aR.s.rotation.z+=Math.sin(idle)*0.05;R.aL.s.rotation.z-=Math.sin(idle)*0.05;
   if(R.scarf)R.scarf.forEach((q,i)=>{q.rotation.y=Math.sin(t*6-i)*0.3;q.rotation.z=Math.sin(t*5-i*0.8)*0.15;});if(R.pony)R.pony.forEach((q,i)=>q.rotation.z=Math.sin(t*4-i)*0.15);if(typeof KI!=='undefined'&&KI&&KI.aura&&KI.a===u){if(R.scarf)R.scarf.forEach((q,i)=>{q.rotation.z=1.2+Math.sin(t*25-i)*0.25;});if(R.pony)R.pony.forEach((q,i)=>q.rotation.z=1.0+Math.sin(t*25-i)*0.2);}
@@ -4161,6 +4161,75 @@ function close(won,retreat){const pl=G?G.pl:0;try{if(root)root.remove();}catch(_
 window.ALLY={start,tap,get G(){return G;},enemyPhase,close,reach,targetsOf};
 const _map=map;map=function(){const r=_map.apply(this,arguments);try{if(M&&M.items&&!M.items.some(i=>/Alliance Battle/.test(i.l||''))){const pl=NODES[S.node]?NODES[S.node].planet:0;const done=(S.alliance||{})[pl];const i=M.items.findIndex(x=>/Questboard/.test(x.l||''));
   M.items.splice(i>=0?i+1:M.items.length,0,{l:`♟ Alliance Battle <small>${done?'cleared · replay for fun':'6×6 grid · bonus rewards'}</small>`,f:start});drawMenu();}}catch(e){console.warn(e);}return r;};
+})();
+
+</script>
+<script>
+// ===== Hero idle / battle-ready stances (no more "praying hands") =====
+(function(){
+try{HM.forEach((o,i)=>['human','beast','robot'].forEach(f=>{if(o[f])o[f]._hid=i;}));}catch(e){console.warn(e);}
+const P=(a,sz,sx,ez,ey,fist,ex)=>{a.s.rotation.set(sx,0,sz);a.e.rotation.set(ex||0,ey||0,ez);if(a.fist&&fist!=null)a.fist(fist);};
+// right arm (aR) is at +z: negative x swings it outward. left arm (aL) at -z: positive x swings it outward.
+const ST={
+ 0:(R,t)=>{const b=Math.abs(Math.sin(t*6));R.hips.position.y+=b*0.03;R.torso.rotation.y=0.35;R.neck.rotation.y=-0.3;
+   P(R.aL,1.25+b*0.05,0.45,1.5,0,1);P(R.aR,0.55+b*0.05,-0.6,2.3,0,1);R.lL.h.rotation.z=-0.45;R.lL.k.rotation.z=-0.25;R.lR.h.rotation.z=0.2;R.lR.k.rotation.z=-0.45;},
+ 1:(R,t)=>{P(R.aR,0.1,-0.95,0.4,0,1,1.5);P(R.aL,2.4+Math.sin(t*3)*0.08,-0.6,0.6,0,1);},
+ 2:(R,t)=>{const f=Math.sin(t*2)*0.05;P(R.aR,0.35+f,-0.6,1.05,0,1);P(R.aL,0.35-f,0.6,1.05,0,1);R.torso.rotation.y=0.15;},
+ 3:(R,t)=>{P(R.aR,1.45+Math.sin(t*2)*0.05,-0.25,0.15,0,0);R.aR.h.rotation.set(0,0,-0.6);P(R.aL,0.1,0.3,0.35,0,0.2);},
+ 4:(R,t)=>{P(R.aR,0.05,-0.95,0.3,0,1,1.6);P(R.aL,0.05,0.95,0.3,0,1,-1.6);},
+ 5:(R,t)=>{P(R.aR,0.65,-0.3,1.15,0,1);P(R.aL,0.05,0.3,0.25,0,0.1);},
+ 6:(R,t)=>{const tw=Math.sin(t*1.5)*0.04;P(R.aR,0.12+tw,-0.38,0.55,0,0.55);P(R.aL,0.12-tw,0.38,0.55,0,0.55);R.torso.rotation.y=0.12;},
+ 7:(R,t)=>{P(R.aR,0.45,-0.35,0.75,0,1);P(R.aL,0.75,0.12,2.2,0,0.35);R.torso.rotation.y=0.2;},
+ 8:(R,t)=>{P(R.aR,2.6,0.6,0.55+Math.sin(t*7)*0.35,0,0);P(R.aL,1.2,0.25,0.45,0,0.7);}};
+window.HERO_STANCE=ST;
+const _ru=animUnit;animUnit=function(u,dt,t){const R=model(u);if(R)R._idle=!u.enemy&&!u.anim&&u.form==='human';return _ru.apply(this,arguments);};
+const _rh=resetHum;resetHum=function(R,stance){const r=_rh.apply(this,arguments);try{if(stance&&R._hid!=null&&ST[R._hid]&&(R._idle!==false))ST[R._hid](R,performance.now()/1000);}catch(e){}return r;};
+})();
+
+</script>
+<script>
+// ===== ACE: HELL'S RAIN (all-enemy dark-fire meteor storm) =====
+(function(){
+SK.a_rain={n:"Hell's Rain",t:'aura',p:3.0,en:24,all:1,form:'human',hero:5,cast:'a_rain',elem:'fire',d:'Tear open the sky and rain dark-fire meteors on every enemy'};
+const ADD=c=>new THR.MeshBasicMaterial({color:c,transparent:true,opacity:1,blending:THR.AdditiveBlending,depthWrite:false,fog:false});
+let G=null;const geo=()=>G||(G={met:new THR.IcosahedronGeometry(0.32,0),trail:new THR.ConeGeometry(0.26,2.2,8,1,true),ring:new THR.RingGeometry(0.2,1,24),disk:new THR.CircleGeometry(1,24)});
+CAST.a_rain=function(a,ts,s,T){const C=cineStart();C.objs=[];window.__rain={ph:'raise',n:0,hits:0};B.banner={n:"HELL'S RAIN",t:0,big:1};a.cast=1;
+ const R=model(a);R._pose='raise';const hb=home(a);const foes=ts.slice();const g=geo();
+ const mid=foes.reduce((v,t)=>v.add(home(t)),new V3()).multiplyScalar(1/Math.max(1,foes.length));
+ const hid=S.party.filter(u=>u!==a).map(u=>{const r=model(u).root;const v=r.visible;r.visible=false;return [r,v];});let hon=1;
+ C.cleanup=()=>{hon=0;hid.forEach(([r,v])=>r.visible=v);R._pose=null;foes.forEach(t=>{t.liftY=0;t.posO=null;});};
+ const dome=new THR.Mesh(new THR.SphereGeometry(150,16,10),new THR.MeshBasicMaterial({color:0x12041c,transparent:true,opacity:0,side:THR.BackSide,depthWrite:false,fog:false}));dome.renderOrder=-5;scene.add(dome);C.objs.push(dome);
+ // vortex
+ const vm=new THR.ShaderMaterial({uniforms:{t:{value:0},o:{value:0}},transparent:true,depthWrite:false,fog:false,side:THR.DoubleSide,
+  vertexShader:'varying vec2 vU;void main(){vU=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:'uniform float t;uniform float o;varying vec2 vU;void main(){vec2 p=vU*2.0-1.0;float r=length(p);if(r>1.0)discard;float a=atan(p.y,p.x);float sw=sin(a*5.0+r*14.0-t*4.0)*0.5+0.5;vec3 c=mix(vec3(0.05,0.0,0.08),vec3(0.45,0.1,0.75),sw*(1.0-r));c+=vec3(1.0,0.35,0.05)*smoothstep(0.55,0.95,r)*(0.6+0.4*sin(a*9.0+t*6.0));float al=o*smoothstep(1.0,0.75,r);gl_FragColor=vec4(c,al);}'});
+ const vort=new THR.Mesh(new THR.CircleGeometry(9,48),vm);vort.rotation.x=PI/2;vort.position.copy(mid).setY(13);vort.scale.setScalar(0.01);scene.add(vort);C.objs.push(vort);
+ // dark swirl around Ace
+ const sw=[];for(let k=0;k<10;k++){const sp=celSprite(orbTex(k%2?0x7a2cff:0xff5a20),0.7,0.7);sp.material.blending=THR.AdditiveBlending;sp.material.depthWrite=false;sp.material.fog=false;sp.visible=false;scene.add(sp);C.objs.push(sp);sw.push(sp);}
+ const field=[];let tt=0;
+ addFx({life:9,max:9,up:(f,dt)=>{tt+=dt;if(hon)hid.forEach(([r])=>r.visible=false);vm.uniforms.t.value=tt;
+  dome.material.opacity=Math.min(0.82,Math.max(0,(tt-0.4)*0.7));
+  if(tt>0.9){const k=Math.min(1,(tt-0.9)/0.8);vort.scale.setScalar(Math.max(0.01,k));vm.uniforms.o.value=k;vort.rotation.z+=dt*0.6;}
+  sw.forEach((sp,i)=>{const on=tt<2.2;sp.visible=on;if(!on)return;const ph=tt*3+i*0.63;const h=((tt*1.6+i*0.25)%2.4);sp.position.set(hb.x+Math.cos(ph)*0.7,h,hb.z+Math.sin(ph)*0.7);sp.material.opacity=1-h/2.4;});
+  field.forEach(m=>{m.material.opacity=0.55+Math.sin(tt*5+m.userData.p)*0.2;});}});
+ // camera: low on Ace, up to sky, rain, wide
+ T.at(0.02,()=>{try{SFX2.wind();}catch(_){}camLook(hb.clone().add(new V3(2.4,1.4,2.6)),hb.clone().add(new V3(0,1.3,0)),6);});
+ T.at(0.9,()=>{window.__rain.ph='vortex';camLook(hb.clone().add(new V3(-1.5,1.0,4.5)),mid.clone().setY(11),3);try{bhSfx('rumble');}catch(_){}});
+ const met=(t,at,k)=>{T.at(at,()=>{const tp=home(t).clone().add(new V3((Math.random()-0.5)*1.2,0,(Math.random()-0.5)*1.2));const st=vort.position.clone().add(new V3((Math.random()-0.5)*6,0,(Math.random()-0.5)*6));
+   const m=new THR.Mesh(g.met,ADD(0xff6a1a));const tr=new THR.Mesh(g.trail,ADD(0x8a2cff));tr.material.opacity=0.6;m.add(tr);tr.position.y=1.1;const glow=celSprite(orbTex(0xff7020),1.4,1.4);glow.material.blending=THR.AdditiveBlending;glow.material.depthWrite=false;glow.material.fog=false;m.add(glow);
+   const dirv=tp.clone().sub(st).normalize();m.quaternion.setFromUnitVectors(new V3(0,-1,0),dirv);scene.add(m);C.objs.push(m);window.__rain.n++;let u=0;const dur=0.45;
+   addFx({life:dur+0.05,max:dur,up:(f,dt)=>{u+=dt;const q=Math.min(1,u/dur);m.position.lerpVectors(st,tp,q*q);m.rotation.y+=dt*8;if(q>=1&&m.visible){m.visible=false;
+     try{sparks(tp.clone().setY(0.4),0xff8030,14,5);sparks(tp.clone().setY(0.5),0x9a4cff,8,3);}catch(_){}
+     const rg=new THR.Mesh(g.ring,ADD(0xffa040));rg.rotation.x=-PI/2;rg.position.copy(tp).setY(0.06);scene.add(rg);C.objs.push(rg);let w=0;addFx({life:0.5,max:0.5,up:(f2,d2)=>{w+=d2;rg.scale.setScalar(0.5+w*5);rg.material.opacity=Math.max(0,1-w*2);}});
+     if(field.length<24){const sc=new THR.Mesh(g.disk,ADD(0xff4a10));sc.material.opacity=0.6;sc.rotation.x=-PI/2;sc.position.copy(tp).setY(0.03+field.length*0.001);sc.scale.setScalar(0.5+Math.random()*0.5);sc.userData.p=Math.random()*6;scene.add(sc);C.objs.push(sc);field.push(sc);}
+     if(k>=0){window.__rain.hits++;leoHit(a,t,s.p/5,"Hell's Rain",{t:'beam',sc:0xff7a20,ic:0x8a2cff});}
+     try{shakeCam&&shakeCam(0.12);}catch(_){}}}});});};
+ T.at(1.9,()=>{window.__rain.ph='rain';camLook(mid.clone().add(new V3(-6.5,4.5,6.5)),mid.clone().setY(0.8),3);});
+ foes.forEach((t,j)=>{for(let k=0;k<5;k++)met(t,1.95+k*0.42+j*0.09+Math.random()*0.05,k);for(let k=0;k<3;k++)met(t,2.1+k*0.6+j*0.13,-1);});
+ T.at(4.5,()=>{window.__rain.ph='wide';R._pose='calm';camLook(hb.clone().add(new V3(-3,3.2,7.5)),mid.clone().lerp(hb,0.45).setY(1),2);});
+ T.at(5.9,()=>{window.__rain.ph='done';cineEnd();});return 6.0;};
+// Ace poses during the cast
+const _rh=resetHum;resetHum=function(R,st){const r=_rh.apply(this,arguments);try{if(R._pose==='raise'){R.aL.s.rotation.set(-0.5,0,2.7);R.aL.e.rotation.set(0,0,0.3);R.aL.fist&&R.aL.fist(0);R.aR.s.rotation.set(-0.3,0,1.0);R.aR.e.rotation.set(0,0,0.9);}else if(R._pose==='calm'&&window.HERO_STANCE)HERO_STANCE[5](R,0);}catch(_){}return r;};
 })();
 
 </script>
