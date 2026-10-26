@@ -1086,7 +1086,7 @@ function st(u,k){if(u.enemy)return u[k];syncForm(u);const f=FORM[u.form];if(k===
 const HM=HEROES.map((H,i)=>{const o={};if(H.single){const m=BUILD.human[i]();m.root.visible=false;scene.add(m.root);o.human=o.beast=o.robot=m;return o;}['human','beast','robot'].forEach(f=>{o[f]=BUILD[f][i]();o[f].root.visible=false;scene.add(o[f].root);});return o;});
 let EMS=[];
 let BAURA=null;var BGOLD=0;function babyAura(dt){const R=HM[4]&&HM[4].human;if(!R||!R.root.visible){if(BAURA)BAURA.g.visible=false;return;}
- if(!BAURA){const g=new T.Group();scene.add(g);const fs=[[0xff1a10,1.55,1.9],[0xff4a20,1.2,1.55],[0xff9a60,0.85,1.15]].map(([c,w,h],k)=>{const m=celSprite(flameTex(c,k%3),w,h,0.08);m.renderOrder=-1;m.material.depthTest=true;m.material.opacity=k===2?0.55:0.8;g.add(m);return{m,c,w,h};});BAURA={g,fs,t:0,fr:0};}
+ if(!BAURA){const g=new T.Group();scene.add(g);const fs=[[0xff1a10,1.15,1.9],[0xff4a20,0.9,1.55],[0xff9a60,0.65,1.15]].map(([c,w,h],k)=>{const m=celSprite(flameTex(c,k%3),w,h,0.08);m.renderOrder=-1;m.material.depthTest=true;m.material.depthWrite=false;m.material.blending=T.AdditiveBlending;m.material.opacity=k===2?0.3:0.38;g.add(m);return{m,c,w,h};});BAURA={g,fs,t:0,fr:0};}
  const A=BAURA;A.g.visible=true;A.t+=dt;const c=R.root.position.clone().add(new V3(0,0.05,0));const back=c.clone().sub(cam.position).normalize();A.g.position.copy(c).addScaledVector(back,0.45);
  const st=Math.floor(A.t*12);if(st!==A.fr){A.fr=st;A.fs.forEach((f,k)=>{f.m.material.map=flameTex(BGOLD?[0xff9a00,0xffc830,0xfff0a0][k]:f.c,(st+k)%3);const j=1+((st+k)%3-1)*0.06;f.m.scale.set(f.w*j*(R.root.scale.x||1),f.h*(2-j)*(R.root.scale.x||1),1);});
   if(st%5===0&&typeof boltFx==='function'){const p0=c.clone().add(new V3((Math.random()-0.5)*0.9,0.3+Math.random()*1.0,(Math.random()-0.5)*0.4));boltFx(p0,p0.clone().add(new V3((Math.random()-0.5)*0.5,(Math.random()-0.5)*0.5,0)),0xff2a10,0.025,0.12,4);}}}
@@ -4582,6 +4582,24 @@ const _mp=map;map=function(){const r=_mp.apply(this,arguments);G(()=>ins(map));r
 const _tt=title;title=function(){const r=_tt.apply(this,arguments);G(()=>ins(title));return r;};
 SK.a_dism&&(SK.a_dism.d='Face punch, gut punch, tear off a limb, sweep, then a dark-energy blast that disintegrates');
 })();
+
+</script>
+<script>
+// ===== v23: Ace robe + Duke duster were closed cones (read as a cylinder around the body). Rebuild as an open cape panel behind the body. =====
+(function(){try{
+const fix=(i)=>{const R=HM[i]&&HM[i].human;if(!R)return 0;const list=[];R.root.traverse(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='ConeGeometry'&&o.parent===R.torso){const p=o.geometry.parameters;if(p.radius>=0.38&&p.height>=0.9)list.push(o);}});
+ list.forEach(o=>{const p=o.geometry.parameters;const hs=[];
+  // two tails: right and left, open at the front (+x) and a slit at the back so the legs show through
+  [[PI*1.5-1.15,2.3]].forEach(([a,len])=>{const g=new T.CylinderGeometry(p.radius*0.62,p.radius*1.12,p.height*0.58,14,3,true,a,len);g.translate(0,p.height*0.16,0);
+   const pos=g.attributes.position;for(let k=0;k<pos.count;k++){const y=pos.getY(k)-p.height*0.16;const t=(p.height*0.29-y)/(p.height*0.58);pos.setX(k,pos.getX(k)*(1+0.06*Math.sin(t*PI)));}g.computeVertexNormals();hs.push(g);});
+  const mat=o.material.clone();mat.side=T.DoubleSide;if(o.material.onBeforeCompile)mat.onBeforeCompile=o.material.onBeforeCompile;if(o.material.customProgramCacheKey)mat.customProgramCacheKey=o.material.customProgramCacheKey;
+  mat.userData.e0=mat.emissive?mat.emissive.clone():null;mat.userData.i0=mat.emissiveIntensity;if(R.mats)R.mats.push(mat);
+  hs.forEach(g=>{const m=new T.Mesh(g,o.material.side===T.BackSide?o.material:mat);m.position.copy(o.position);m.rotation.set(0,0,0);m.scale.copy(o.scale);m.castShadow=true;m.userData.keep=1;m.userData.noGfx=1;o.parent.add(m);});
+  const hemY=o.position.y-p.height*0.13;const rm=[];o.parent.children.forEach(c=>{if(c!==o&&c.isMesh&&c.geometry.type==='ConeGeometry'&&c.geometry.parameters.radius>0.08&&c.geometry.parameters.radius<0.12&&Math.abs(c.position.y-(-0.75))<0.05){if(c.position.x>-0.2)rm.push(c);else{c.position.y=hemY;c.position.x*=1.05;}}});rm.forEach(c=>c.parent.remove(c));
+  o.parent.remove(o);});return list.length;};
+window.__coatFix=0;const run=()=>{const n=fix(5)+fix(6);window.__coatFix+=n;};run();
+const _au=animUnit;animUnit=function(u){try{if(u&&!u.enemy&&(u.id===5||u.id===6)){const R=model(u);if(R&&R._det&&!R._coatChk){R._coatChk=1;window.__coatFix+=fix(u.id);}}}catch(_){}return _au.apply(this,arguments);};
+}catch(e){console.warn('coatfix',e);}})();
 
 </script>
 <script>if("serviceWorker" in navigator&&location.protocol!=="file:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script></body></html>
