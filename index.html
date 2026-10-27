@@ -675,9 +675,20 @@ function humanDuke(){const SKN=0xe0b088,DU=0x8a5a30,DK=0x3a2414,HAT=0x5a3a1c;
  const st=new T.Shape();for(let i=0;i<10;i++){const r=i%2?0.035:0.08,an=i/10*PI*2-PI/2;i?st.lineTo(Math.cos(an)*r,Math.sin(an)*r):st.moveTo(Math.cos(an)*r,Math.sin(an)*r);}
  const bdg=new T.Mesh(new T.ExtrudeGeometry(st,{depth:0.015,bevelEnabled:false}),GLOW(0xffd040,1));bdg.position.set(0.2,0.3,0.1);bdg.rotation.y=PI/2;R.torso.add(bdg);
  part(box(0.06,0.06,0.42),TM(0x4a3018),0.02,-0.22,0,R.torso);part(box(0.07,0.07,0.1),TM(0xd0a040),0.2,-0.22,0,R.torso,false);
- // twin energy revolvers
- const gun=(hh)=>{const g=grp(hh,0.06,-0.02,0);part(box(0.08,0.12,0.05),TM(0x3a2a20),0,-0.04,0,g);part(cyl(0.035,0.035,0.08,8),TM(0x8890a0),0.08,0.03,0,g).rotation.z=PI/2;part(box(0.22,0.05,0.05),TM(0x6a7080),0.18,0.04,0,g);const tip=part(sph(0.03,8,6),GLOW(0x40e0ff,0.95),0.3,0.04,0,g,false);return tip;};
+ // twin six-shooter revolvers (v24: real guns, 6-chamber cylinder)
+ R.revs=[];R.drums=[];const gun=(hh)=>{const g=grp(hh,0.06,-0.02,0);const WD=TM(0x5a3418),ST=TM(0x8a909c),BL=TM(0x2a2e36);
+  const gp=part(box(0.07,0.13,0.045),WD,-0.005,-0.06,0,g);gp.rotation.z=0.25;part(box(0.1,0.06,0.04),BL,0.04,0.03,0,g);
+  const dr=grp(g,0.07,0.035,0);part(cyl(0.038,0.038,0.07,12),ST,0,0,0,dr).rotation.z=PI/2;for(let c=0;c<6;c++){const an=c/6*PI*2;part(cyl(0.009,0.009,0.072,6),BL,0,Math.cos(an)*0.024,Math.sin(an)*0.024,dr,false).rotation.z=PI/2;}
+  part(cyl(0.016,0.016,0.2,10),ST,0.2,0.048,0,g).rotation.z=PI/2;part(box(0.2,0.012,0.012),BL,0.2,0.026,0,g,false);part(box(0.02,0.03,0.01),BL,0.29,0.068,0,g,false);
+  const hm=part(box(0.03,0.035,0.02),BL,-0.01,0.07,0,g,false);hm.rotation.z=-0.4;const tg=part(tor(0.022,0.006),BL,0.02,-0.015,0,g,false);
+  const tip=new T.Object3D();tip.position.set(0.31,0.048,0);g.add(tip);R.revs.push(g);R.drums.push(dr);return tip;};
  R.muzzle=gun(R.aR.h);R.muzzle2=gun(R.aL.h);
+ // pump shotgun (hidden until the finisher)
+ {const sg=grp(R.aR.h,0.05,-0.01,0);const WD=TM(0x6a3c1a),ST=TM(0x7a808c),BL=TM(0x22262c);
+  part(box(0.24,0.07,0.05),WD,-0.16,-0.03,0,sg).rotation.z=-0.12;part(box(0.2,0.075,0.055),BL,0.06,0.01,0,sg);
+  part(cyl(0.02,0.02,0.52,10),ST,0.42,0.03,0,sg).rotation.z=PI/2;part(cyl(0.016,0.016,0.42,8),BL,0.36,-0.012,0,sg).rotation.z=PI/2;
+  const pump=part(cyl(0.03,0.03,0.13,10),WD,0.28,-0.012,0,sg);pump.rotation.z=PI/2;const st=new T.Object3D();st.position.set(0.69,0.03,0);sg.add(st);
+  sg.visible=false;R.shotgun=sg;R.sgPump=pump;R.sgTip=st;}
  // jetpack spurs
  R.spurs=[];[R.lR,R.lL].forEach(l=>{const f=l.f||l.k;if(!f)return;const sp=part(cone(0.04,0.14,6),GLOW(0x40e0ff,0.85),-0.12,-0.2,0,f,false);sp.rotation.z=-PI/2;R.spurs.push(sp);});
  let clk=0;R.sim=dt=>{clk+=dt;R.tails.forEach((t,i)=>t.rotation.x=Math.sin(clk*3+i)*0.1);R.spurs.forEach((s2,i)=>s2.scale.set(1,0.7+Math.abs(Math.sin(clk*14+i))*0.6,1));};
@@ -889,7 +900,7 @@ const SK={
  b_basic:{n:'Claw Strike',t:'sword',p:1.0,en:0,form:'beast',st:'claw',basic:1},
  r_basic:{n:'Double Slash',t:'sword',p:0.6,hits:2,en:0,form:'robot',st:'dslash',basic:1},howl:{n:'Howling Shockwave',t:'beam',p:0.7,en:7,form:'beast',hero:0,all:1,st:'howl',fx:'howl',stun:0.2},pack:{n:'Phantom Pack Rush',t:'sword',p:0.42,hits:5,en:8,form:'beast',hero:0,st:'bite',ghost:1},cyclone2:{n:'Cyclone Wingbeat',t:'beam',p:0.75,en:7,form:'beast',hero:1,all:1,st:'flap',fx:'flap'},skydrop:{n:'Sky Drop',t:'sword',p:2.1,en:8,form:'beast',hero:1,st:'dive',lift:1},quake:{n:'Quake Stomp',t:'beam',p:0.8,en:7,form:'beast',hero:2,all:1,st:'stomp',fx:'stomp'},thrash:{n:'Thrash Bite',t:'sword',p:0.5,hits:4,en:8,form:'beast',hero:2,st:'roar'},
  super:{n:'TRI-FORM SUPER',t:'sword',p:1,en:0,cp:60,form:'any',super:1},n_basic:{n:'Scepter Bolt',t:'beam',p:0.95,en:0,form:'human',hero:3,basic:1,cast:'n_basic'},n_chain:{n:'Chain Lightning',t:'beam',p:0.75,en:8,form:'human',hero:3,all:1,cast:'n_chain'},n_spear:{n:'Thunder Spear',t:'beam',p:2.1,en:10,form:'human',hero:3,cast:'n_spear'},n_storm:{n:'Storm Crown',t:'beam',p:0.85,en:12,form:'human',hero:3,all:1,cast:'n_storm'},n_gale:{n:'Gale Scythe',t:'aura',p:0.6,en:6,form:'human',hero:3,all:1,cast:'n_gale'},n_tide:{n:'Tidal Wave',t:'aura',p:1.4,en:7,form:'human',hero:3,cast:'n_tide'},n_twin:{n:'Familiar Onslaught',t:'beam',p:0.45,en:5,form:'human',hero:3,cast:'n_twin'},n_tornado:{n:'Dark Tornado',t:'aura',p:2.6,en:24,form:'human',hero:3,all:1,cast:'n_tornado'},n_super:{n:'Crimson Tempest',t:'beam',p:1,en:0,form:'human',hero:99,all:1,cast:'n_super',super:0},
- b_basic:{n:'Psychic Rock Throw',t:'aura',p:1.25,en:0,form:'human',hero:4,basic:1,cast:'b_basic'},b_truck:{n:'18-Wheeler Summon',t:'aura',p:2.6,en:14,form:'human',hero:4,cast:'b_truck'},b_tank:{n:'Tank',t:'beam',p:3.2,en:22,form:'human',hero:4,cast:'b_tank'},b_sun:{n:'Ki Bomb',t:'aura',p:3.0,en:30,form:'human',hero:4,all:1,cast:'b_sun'},b_gate:{n:'Golden Gate',t:'aura',p:0,en:16,form:'human',hero:4,all:1,cast:'b_gate',gate:1},a_basic:{n:'Dark Aura Slash',t:'sword',p:0.75,en:0,form:'human',hero:5,basic:1,cast:'a_basic'},a_ride:{n:'Ashen Ride',t:'sword',p:4.2,en:30,form:'human',hero:5,cast:'a_ride'},a_harvest:{n:'Soul Harvest',t:'aura',p:1.3,en:10,form:'human',hero:5,cast:'a_harvest'},a_mark:{n:"Death's Mark",t:'aura',p:0,en:8,form:'human',hero:5,cast:'a_mark'},a_mountain:{n:'Mountain',t:'sword',p:2.8,en:28,form:'human',hero:5,all:1,cast:'a_mountain'},a_king:{n:'King of the Dead',t:'sword',p:2.4,en:30,form:'human',hero:5,all:1,cast:'a_king'},a_death_s:{n:'Death Ball',t:'aura',p:3.4,en:0,form:'human',hero:99,all:1,cast:'a_death'},a_king_s:{n:'King of the Dead',t:'sword',p:3.0,en:0,form:'human',hero:99,all:1,cast:'a_king'},
+ b_basic:{n:'Psychic Rock Throw',t:'aura',p:1.25,en:0,form:'human',hero:4,basic:1,cast:'b_basic'},b_truck:{n:'18-Wheeler Summon',t:'aura',p:2.6,en:14,form:'human',hero:4,cast:'b_truck'},b_tank:{n:'Tank',t:'beam',p:3.2,en:22,form:'human',hero:4,cast:'b_tank'},b_sun:{n:'Ki Bomb',t:'aura',p:3.0,en:30,form:'human',hero:4,all:1,cast:'b_sun'},b_gate:{n:'Golden Gate',t:'aura',p:0,en:16,form:'human',hero:4,all:1,cast:'b_gate',gate:1},a_basic:{n:'Dark Aura Slash',t:'sword',p:0.75,en:0,form:'human',hero:5,basic:1,cast:'a_basic'},a_ride:{n:'Ashen Ride',t:'sword',p:4.2,en:30,form:'human',hero:5,cast:'a_ride'},a_mountain:{n:'Mountain',t:'sword',p:2.8,en:28,form:'human',hero:5,all:1,cast:'a_mountain'},a_death_s:{n:'Death Ball',t:'aura',p:3.4,en:0,form:'human',hero:99,all:1,cast:'a_death'},
  b_bhole:{n:'Black Hole',t:'aura',p:3.4,en:18,form:'human',hero:4,blackhole:1},b_cry:{n:'Cry',t:'aura',p:0.3,en:10,form:'human',hero:4,all:1,cast:'b_cry'},b_moon:{n:'Moon Crash',t:'aura',p:99,en:40,form:'human',hero:4,all:1,cast:'b_moon'},b_moon_s:{n:'Moon Crash',t:'aura',p:99,en:0,form:'human',hero:99,all:1,cast:'b_moon'},
  d_claw:{n:'Fire Claw',t:'sword',p:1.0,en:0,form:'beast',hero:1,basic:1,cast:'d_claw',dragon:1},d_xclaw:{n:'Double Fire Claw',t:'sword',p:0.7,en:6,form:'beast',hero:1,cast:'d_xclaw',dragon:1},d_burn:{n:'Burn',t:'aura',p:2.3,en:10,form:'beast',hero:1,cast:'d_burn',dragon:1},d_pile:{n:'Pile Driver',t:'sword',p:3.4,en:16,form:'beast',hero:1,cast:'d_pile',dragon:1},d_devour:{n:'Devour',t:'sword',p:99,en:8,form:'beast',hero:1,cast:'d_devour',dragon:1,devour:1},
  inferno:{n:'Inferno Breath',t:'aura',p:1.2,en:14,form:'beast',hero:1,all:1,inferno:1,dragon:1},l_laser:{n:'Twin Arm Lasers',t:'beam',p:0.42,hits:2,en:0,form:'robot',hero:2,basic:1,leo:'laser'},l_salvo:{n:'Missile Salvo',t:'beam',p:0.7,en:8,form:'robot',hero:2,all:1,leo:'salvo'},l_gat:{n:'Heavy Gatling',t:'gun',p:0.14,hits:12,en:7,form:'robot',hero:2,leo:'gat'},l_cal:{n:'Scoped .50 Cal Shot',t:'beam',p:2.4,en:10,form:'robot',hero:2,leo:'cal'},l_arsenal:{n:'Full Arsenal',t:'beam',p:1,en:0,cp:50,form:'robot',hero:2,leo:'all'},
@@ -1230,8 +1241,8 @@ function commands(h){const f=h.form,bs=basicFor(h);
 function transMenu(h){const fs=['human','beast','robot'].filter(f=>f!==h.form);const d={human:'balanced · fighting-game combos',beast:'fast · evasive · crits',robot:'armor · beam weapons'};
  menu(fs.map(f=>({l:`${f==='human'?'Human':f==='beast'?HEROES[h.id].beast:'Robot'} <small>${d[f]}</small>`,f:()=>transform(h,f)})),()=>commands(h),'TRANSFORM TO');}
 function skillMenu(h){const list=skillsFor(h.id,h.form).map(k=>[k,SK[k]]);
- menu(list.map(([k,s])=>({l:`${s.t==='beam'?'⚡':s.t==='gun'?'🔫':s.t==='aura'?'✦':s.t==='melee'?'👊':'⚔'} ${s.n} <small>${s.cp?s.cp+' CP':s.en+' EN'}${s.all?' · all':''}${s.gate&&(gateLeft()||gateCdLeft())?' · <i>'+(gateLeft()?'active '+gateLeft()+' rnd':'cooldown '+gateCdLeft()+' rnd')+'</i>':''}${s.devour&&!alive(B.en).some(devourOK)?' · <i>needs foe ≤25% HP (boss ≤10%)</i>':''}</small>`,dis:h.en<s.en||(s.cp&&h.cp<s.cp)||(s.devour&&!alive(B.en).some(devourOK))||!!(s.gate&&(gateLeft()||gateCdLeft())),f:()=>s.all?act(h,s,alive(B.en)):targetMenu(h,s,()=>skillMenu(h))})),()=>commands(h),FNAME(h,h.form)+' SKILLS');}
-function targetMenu(h,s,back){menu(alive(B.en).map(e=>({l:`${e.name} <small>${e.hp} HP${s.devour&&!devourOK(e)?' · too healthy':''}</small>`,e,dis:!!(s.devour&&!devourOK(e)),f:()=>act(h,s,[e])})),back,'SELECT TARGET');B.tmenu=true;}
+ menu(list.map(([k,s])=>({l:`${s.t==='beam'?'⚡':s.t==='gun'?'🔫':s.t==='aura'?'✦':s.t==='melee'?'👊':'⚔'} ${s.n} <small>${s.cp?s.cp+' CP':s.en+' EN'}${s.all?' · all':''}${s.gate&&(gateLeft()||gateCdLeft())?' · <i>'+(gateLeft()?'active '+gateLeft()+' rnd':'cooldown '+gateCdLeft()+' rnd')+'</i>':''}${s.devour&&!alive(B.en).some(devourOK)?' · <i>needs foe ≤25% HP (boss ≤10%)</i>':''}${s.arms&&!alive(B.en).some(e=>window.hasArms&&hasArms(e))?' · <i>no arms to take</i>':''}</small>`,dis:h.en<s.en||(s.cp&&h.cp<s.cp)||(s.devour&&!alive(B.en).some(devourOK))||(s.arms&&!alive(B.en).some(e=>window.hasArms&&hasArms(e)))||!!(s.gate&&(gateLeft()||gateCdLeft())),f:()=>s.all?act(h,s,alive(B.en)):targetMenu(h,s,()=>skillMenu(h))})),()=>commands(h),FNAME(h,h.form)+' SKILLS');}
+function targetMenu(h,s,back){menu(alive(B.en).map(e=>({l:`${e.name} <small>${e.hp} HP${s.devour&&!devourOK(e)?' · too healthy':''}${s.arms&&!(window.hasArms&&hasArms(e))?' · No arms to take':''}</small>`,e,dis:!!(s.devour&&!devourOK(e))||!!(s.arms&&!(window.hasArms&&hasArms(e))),f:()=>act(h,s,[e])})),back,'SELECT TARGET');B.tmenu=true;}
 function transform(h,to){busy=true;{const from=h.form;h.form=to;syncForm(h);h.form=from;h.fm=to;}setTimeout(()=>pop(h,`POWER ${FM[to]>=FM[h.morph?h.morph.from:'human']?'UP':'SHIFT'} ×${FM[to]} HP/ATK`,FM[to]>1.3?'#4af':FM[to]>1?'#fa4':'#8f8',true),350);h.morph={from:h.form,t:0};h.form=to;h.en=Math.min(h.men,h.en+3);SFX.morph();camOn(h,5);columnFx(home(h),parseInt(HEROES[h.id].col.slice(1),16));B.tf={h,t:0};
  log(`${h.name}: "TRANSFORM!" → ${FNAME(h,to)}. ${to==='robot'?'Armor up, beam weapons online.':to==='beast'?'Speed, evasion and crits up.':'Balanced stance, fighting combos, builds CP.'} (+3 EN)`);drawParty();setTimeout(()=>endTurn(),1500);}
 function groundReset(u){if(!u||!u.enemy||u.hp<=0)return;u.liftY=0;u.posO=null;try{const R=model(u),root=R.root;if(u._cs)root.children.forEach((c,i)=>{if(u._cs[i]&&!c.scale.equals(u._cs[i]))c.scale.copy(u._cs[i]);});if(u._rs!=null&&Math.abs(root.scale.x-u._rs)>1e-4)root.scale.setScalar(u._rs);}catch(_){}}
@@ -1290,7 +1301,7 @@ function aceUnlockCut(done){const R=HM[5]&&HM[5].human;if(!R){done();return;}con
   B.banner={n:'A SHADOW STIRS...',t:0,big:1};C.cleanup=()=>{R.root.visible=false;R.root.position.y=0;};},
  (C,dt)=>{const t=C.t;dark.material.opacity=Math.min(0.7,t*0.6);dark.position.copy(cam.position);const q=Math.min(1,Math.max(0,(t-0.6)/1.6));R.root.position.y=-2.4*(1-q*(2-q));
   camLook(new V3(st.x+3.2,1.2+q*0.4,st.z+4),new V3(st.x,0.4+q*0.8,st.z),4);if(Math.random()<0.6){const w=celSprite(flameTex(Math.random()<0.5?0x2a0838:0x8a30e0,Math.floor(Math.random()*3)),0.8,1.2,0.1);w.position.set(st.x+(Math.random()-0.5)*1.6,0.2+Math.random()*1.4,st.z+(Math.random()-0.5)*0.8);addFx({mesh:w,life:0.5,max:0.5,up:f=>{w.position.y+=0.03;w.material.opacity=f.life/f.max;}});}
-  if(R.crownGlow)R.crownGlow.material.opacity=q;if(!C.b&&t>2.2){C.b=1;B.banner={n:'ACE HAS JOINED!',t:0,big:1};flashA=0.5;CAM.shake=0.5;sparks(center({enemy:1,m:R}),0xffd040,30,3);log('ACE, King of the Dead, has joined your roster! Pick him in Squad.');}},
+  if(R.crownGlow)R.crownGlow.material.opacity=q;if(!C.b&&t>2.2){C.b=1;B.banner={n:'ACE HAS JOINED!',t:0,big:1};flashA=0.5;CAM.shake=0.5;sparks(center({enemy:1,m:R}),0xffd040,30,3);log('ACE, the Reaper Knight, has joined your roster! Pick him in Squad.');}},
  ()=>{done();});}
 
 function victory(){busy=false;sceneN='victory';B.cur=null;const xp=Math.round((B.en.reduce((s,e)=>s+e.xp,0)+5)*(NODES[S.node]&&NODES[S.node].planet>=8?1.3:1));SFX.win();camOn(S.party[0],7);
@@ -2889,8 +2900,8 @@ function autoAct(h){if(!AUTO||!B||sceneN!=='battle'||busy||B.cur!==h||h.enemy)re
  const hurt=alive(S.party).filter(p=>p.hp<p.mhp*0.3).sort((a,b)=>a.hp/a.mhp-b.hp/b.mhp)[0];
  if(hurt){const ik=Object.keys(ITEMS).find(k=>(S.items[k]||0)>0&&/heal|repair|potion|kit/i.test(ITEMS[k].n+' '+ITEMS[k].d)&&/HP/.test(ITEMS[k].d)&&ITEMS[k].ok(hurt));if(ik)return useItem(h,ik,hurt);}
  const tgt=foes.slice().sort((a,b)=>a.hp-b.hp)[0];
- const sk=skillsFor(h.id,h.form).map(k=>SK[k]).filter(s=>s&&!s.devour&&!s.gate&&!s.super&&h.en>=(s.en||0)&&!(s.cp&&h.cp<s.cp)).sort((a,b)=>((b.p||1)*(b.all?Math.min(foes.length,2):1))-((a.p||1)*(a.all?Math.min(foes.length,2):1)));
- const pick=(sk[0]&&(h.en-(sk[0].en||0))>=0&&Math.random()<0.75)?sk[0]:basicFor(h);B.autoUsed=1;act(h,pick,pick.all?foes:[tgt]);}
+ const sk=skillsFor(h.id,h.form).map(k=>SK[k]).filter(s=>s&&!s.devour&&!s.gate&&!s.super&&!(s.arms&&!foes.some(e=>window.hasArms&&hasArms(e)))&&h.en>=(s.en||0)&&!(s.cp&&h.cp<s.cp)).sort((a,b)=>((b.p||1)*(b.all?Math.min(foes.length,2):1))-((a.p||1)*(a.all?Math.min(foes.length,2):1)));
+ const pick=(sk[0]&&(h.en-(sk[0].en||0))>=0&&Math.random()<0.75)?sk[0]:basicFor(h);B.autoUsed=1;act(h,pick,pick.all?foes:[pick.arms?(foes.filter(e=>window.hasArms&&hasArms(e)).sort((a,b)=>a.hp-b.hp)[0]||tgt):tgt]);}
 window.autoAct=autoAct;
 const _cmd=commands;commands=function(h){const r=_cmd.apply(this,arguments);if(AUTO)setTimeout(()=>autoAct(h),450);return r;};
 setInterval(()=>{try{if(AUTO&&B&&sceneN==='battle'&&B.cur&&!B.cur.enemy&&!busy&&!B.tmenu_auto&&!(typeof CI!=='undefined'&&CI))autoAct(B.cur);}catch(_){}},700);
@@ -4482,7 +4493,7 @@ applyHi();
 SK.a_dism={n:'Dismember',t:'aura',p:3.2,en:22,form:'human',hero:5,cast:'a_dism',elem:'void',d:'Face punch, gut punch, pop off a limb, sweep, then a dark-energy blast'};
 const ADD=c=>new THR.MeshBasicMaterial({color:c,transparent:true,opacity:1,blending:THR.AdditiveBlending,depthWrite:false,fog:false});
 const glowS=(c,s)=>{const sp=celSprite(orbTex(c),s,s);sp.material.blending=THR.AdditiveBlending;sp.material.depthWrite=false;sp.material.fog=false;return sp;};
-function limbOf(R){if(R.aL&&R.aL.s)return R.aL.s;if(R.aR&&R.aR.s)return R.aR.s;if(R.wings&&R.wings[0])return R.wings[0];if(R.legs&&R.legs[0])return R.legs[0].h||R.legs[0];if(R.tail&&R.tail[0])return R.tail[0];if(R.jaw)return R.jaw;let m=null;R.root.traverse(o=>{if(!m&&o!==R.root&&o.isMesh)m=o;});return m;}
+function limbOf(R){return window.armOf?armOf(R):null;}
 function burst(p,n){try{sparks(p,0xffe0a0,n,5);sparks(p,0xb060ff,n,3);}catch(_){}for(let i=0;i<Math.round(n/2);i++){const s=glowS(i%2?0x9a40ff:0xe0c0ff,0.25);s.position.copy(p);scene.add(s);const v=new V3().randomDirection().multiplyScalar(1.5+Math.random()*2);addFx({mesh:s,life:0.8,max:0.8,up:(f,dt)=>{s.position.addScaledVector(v,dt);v.y+=dt*0.8;s.material.opacity=f.life/f.max;}});}}
 CAST.a_dism=function(a,ts,s,T){const t=ts[0];const C=cineStart();C.objs=[];window.__dism={ph:'dash',hits:0};B.banner={n:'DISMEMBER',t:0,big:1};a.cast=1;
  const R=model(a),E=model(t);const hb=home(a),tp=home(t).clone();const fwd=tp.clone().sub(hb).setY(0).normalize();const side=new V3(-fwd.z,0,fwd.x);if(side.z<0)side.negate();
@@ -4600,6 +4611,72 @@ const fix=(i)=>{const R=HM[i]&&HM[i].human;if(!R)return 0;const list=[];R.root.t
 window.__coatFix=0;const run=()=>{const n=fix(5)+fix(6);window.__coatFix+=n;};run();
 const _au=animUnit;animUnit=function(u){try{if(u&&!u.enemy&&(u.id===5||u.id===6)){const R=model(u);if(R&&R._det&&!R._coatChk){R._coatChk=1;window.__coatFix+=fix(u.id);}}}catch(_){}return _au.apply(this,arguments);};
 }catch(e){console.warn('coatfix',e);}})();
+
+</script>
+<script>
+// ===== v24: Duke revolvers+shotgun Quick Draw, Ace skill removals, Dismember needs real arms =====
+(function(){try{
+// ---- Ace: remove Soul Harvest, Death's Mark, King of the Dead ----
+['a_harvest','a_mark','a_king','a_king_s'].forEach(k=>{delete SK[k];delete CAST[k];});
+// ---- arm detection (real arm geometry only) ----
+const meshN=o=>{let n=0;o.traverse(c=>{if(c.isMesh&&c.visible!==false)n++;});return n;};
+window.armOf=function(R){if(!R)return null;for(const a of [R.aL,R.aR]){if(a&&a.s&&meshN(a.s)>0)return a.s;}
+ // quadruped brutes whose front limbs hang from the shoulders (e.g. Pebble Brute): limb groups mounted high on the body beside lower legs
+ if(R.legs&&R.legs.length>=4&&R.h){R.root.updateMatrixWorld(true);const y0=R.root.position.y;const info=R.legs.map(l=>{const o=l.h||l;if(!o.traverse||!meshN(o))return null;const b=new T.Box3().setFromObject(o);return{o,lo:(b.min.y-y0)/R.h};}).filter(Boolean);
+  const hi=info.filter(i=>i.lo>0.18),lo=info.filter(i=>i.lo<0.1);if(hi.length&&lo.length)return hi[0].o;}
+ return null;};
+window.hasArms=u=>{try{return !!(u&&u.hp>0&&u.enemy&&armOf(model(u)));}catch(_){return false;}};
+if(SK.a_dism){SK.a_dism.arms=1;SK.a_dism.d='Face punch, gut punch, tear off an arm, sweep, then a dark-energy blast (needs a foe with arms)';}
+// guard: if something targets an armless foe anyway, Ace uses his basic attack instead
+const _act=act;act=function(a,s,ts){try{if(s&&s.arms&&ts&&ts[0]&&!hasArms(ts[0])){const al=alive(B.en).filter(hasArms);if(al.length)ts=[al[0]];else s=basicFor(a);}}catch(_){}return _act.call(this,a,s,ts);};
+// ---- Duke: Quick Draw rework ----
+const TR=new T.MeshBasicMaterial({color:0xffe2a0,transparent:true,opacity:0.95,depthWrite:false});
+const BR=new T.MeshStandardMaterial({color:0xd8a040,metalness:0.9,roughness:0.3});
+const SH=new T.MeshStandardMaterial({color:0xb02020,metalness:0.2,roughness:0.6});
+const BG=new T.BoxGeometry(0.32,0.018,0.018),PG=new T.BoxGeometry(0.18,0.014,0.014),CG=new T.CylinderGeometry(0.02,0.02,0.06,6),SG=new T.CylinderGeometry(0.035,0.035,0.1,8);
+function tracer(p0,p1,geo,spd,cb){const m=new T.Mesh(geo,TR);m.position.copy(p0);const d=p1.clone().sub(p0);const L=d.length();m.quaternion.setFromUnitVectors(new V3(1,0,0),d.clone().normalize());let s=0,done=0;addFx({mesh:m,life:L/spd+0.03,max:1,up:(f,dt)=>{s+=dt*spd;m.position.copy(p0).addScaledVector(d,Math.min(1,s/L));if(!done&&s>=L){done=1;cb&&cb();}}});}
+function flash(p,sz){const f=celSprite(orbTex(0xfff0c0),sz,sz);f.position.copy(p);addFx({mesh:f,life:0.06,max:0.06,up:g=>f.material.opacity=g.life/g.max});try{smokePuff(p.clone(),sz*0.5,0.7,0xb0b0b0);}catch(_){}}
+function casing(p,geo,mat){const m=new T.Mesh(geo,mat);m.position.copy(p);const v=new V3(-0.8-Math.random(),2+Math.random(),(Math.random()-0.5)*1.5);addFx({mesh:m,life:0.9,max:0.9,up:(f,dt)=>{v.y-=9*dt;m.position.addScaledVector(v,dt);if(m.position.y<0.02){m.position.y=0.02;v.multiplyScalar(0.4);v.y=Math.abs(v.y)*0.5;}m.rotation.x+=dt*14;m.rotation.z+=dt*9;}});}
+function gunTip(a,k){const R=model(a);const m=(k&&R.muzzle2)||R.muzzle;return m?m.getWorldPosition(new V3()):center(a).add(new V3(0.5,0.3,0));}
+function bang(k){try{(SFX.gun||SFX2.punch)();}catch(_){}}
+CAST.d_quick=function(a,ts,s,T){let t=ts[0];const R=model(a);window.__dq={ph:'start',hits:0,shots:0,pellets:0,tot:0};
+ // whole-attack damage rolled once (same as before), then split across 12 revolver hits + shotgun
+ const r0=calc(a,t,{t:s.t||'beam',p:s.p,crit:s.crit});window.__dq.r0=r0.miss?0:r0.d;const W=[];for(let i=0;i<12;i++)W.push(0.055);W.push(1-0.055*12);
+ let left=r0.miss?0:r0.d,used=0;const hit=(i,o)=>{if(!t||t.hp<=0){const al=alive(B.en);if(!al.length)return;t=al[0];}
+  const part=r0.miss?0:(i===12?left-used:Math.max(1,Math.round(r0.d*W[i])));used+=part;const _c=calc;calc=()=>r0.miss?{miss:1}:{d:part,crit:r0.crit};
+  try{const h0=t.hp;leoHit(a,t,s.p,s.n,o);window.__dq.tot+=Math.max(0,h0-t.hp);}finally{calc=_c;}window.__dq.hits++;};
+ const aim=()=>{const c=center(t||alive(B.en)[0]||a);return c;};
+ const shoot=(i,left_)=>{const p0=gunTip(a,left_?1:0);const p1=aim().add(new V3((Math.random()-0.5)*0.3,(Math.random()-0.5)*0.4,(Math.random()-0.5)*0.3));flash(p0,0.35);bang();R._pose=left_?'dq_L':'dq_R';R._kick=left_?-1:1;R._kt=0.08;
+  const dr=R.drums&&R.drums[left_?1:0];if(dr)dr.rotation.x+=PI/3;window.__dq.shots++;tracer(p0,p1,BG,70,()=>hit(i,{small:1,sc:0xffd080,kb:0.12}));};
+ // shotgun swap state is visual only; cleanup always restores revolvers
+ const clean=()=>{R._pose=null;[R.aR,R.aL].forEach(x=>{if(x&&x.h)x.h.rotation.z=0;});if(R.shotgun)R.shotgun.visible=false;(R.revs||[]).forEach(g=>g.visible=true);};
+ try{R._pose='dq_R';const hb=home(a);
+  T.at(0.15,()=>{window.__dq.ph='r1';shoot(0,0);});
+  T.at(0.42,()=>{window.__dq.ph='l1';shoot(1,1);});
+  for(let k=0;k<10;k++)T.at(0.72+k*0.12,()=>{window.__dq.ph='fan';shoot(2+k,k%2===1);});
+  T.at(2.0,()=>{window.__dq.ph='swap';R._pose='dq_swap';(R.revs||[]).forEach(g=>g.visible=false);if(R.shotgun)R.shotgun.visible=true;try{SFX.morph();}catch(_){}});
+  T.at(2.3,()=>{window.__dq.ph='pump';R._pose='dq_sg';if(R.sgPump){R.sgPump.position.x=0.2;}});
+  T.at(2.45,()=>{if(R.sgPump)R.sgPump.position.x=0.28;});
+  T.at(2.65,()=>{window.__dq.ph='blast';R._pose='dq_sgfire';const p0=R.sgTip?R.sgTip.getWorldPosition(new V3()):gunTip(a,0);const c=aim();flash(p0,0.8);try{SFX2.explosion();}catch(_){}CAM.shake=0.35;
+   const n=(typeof GQ!=='undefined'&&GQ===2)?7:10;for(let j=0;j<n;j++){const p1=c.clone().add(new V3((Math.random()-0.5)*0.9,(Math.random()-0.5)*0.9,(Math.random()-0.5)*0.9));tracer(p0,p1,PG,55);window.__dq.pellets++;}
+   a.posO=hb.clone().add(new V3(-0.35,0,0));T.at(2.75,()=>{hit(12,{sc:0xffc060,kb:1.2,k:'star'});if(t){t.kb=1.2;}});});
+  T.at(3.05,()=>{R._pose='dq_sg';if(R.sgPump)R.sgPump.position.x=0.2;const p=R.shotgun?R.shotgun.getWorldPosition(new V3()):center(a);casing(p.add(new V3(0,0.05,0)),SG,SH);});
+  T.at(3.2,()=>{if(R.sgPump)R.sgPump.position.x=0.28;a.posO=null;});
+  T.at(3.5,()=>{window.__dq.ph='done';clean();});
+ }catch(e){console.warn('d_quick',e);clean();}
+ return 3.6;};
+// revolver casings: dumped at the end of the attack (speed-loader flick) - only visual
+// ---- Duke poses: overlay after resetHum ----
+const _rh=resetHum;resetHum=function(R,st){const r=_rh.apply(this,arguments);try{const p=R._pose;if(!p||!/^dq_/.test(p))return r;const A=R.aR,Bm=R.aL;
+  if(p==='dq_R'||p==='dq_L'){A.s.rotation.z=1.5;A.e.rotation.z=0.05;Bm.s.rotation.z=1.5;Bm.e.rotation.z=0.05;A.s.rotation.x=-0.15;Bm.s.rotation.x=0.15;R.torso.rotation.y=-0.15;
+   const kk=(R._kt>0?R._kt/0.08:0)*0.35;(p==='dq_R'?A:Bm).s.rotation.z+=kk;(p==='dq_R'?A:Bm).e.rotation.z+=kk*0.6;R._kt=Math.max(0,(R._kt||0)-1/60);}
+  if(p==='dq_swap'){A.s.rotation.z=0.6;A.e.rotation.z=1.2;Bm.s.rotation.z=0.4;Bm.e.rotation.z=1.0;R.torso.rotation.y=0.3;}
+  if(p==='dq_sg'||p==='dq_sgfire'){A.s.rotation.z=1.35;A.e.rotation.z=0.25;Bm.s.rotation.z=1.45;Bm.e.rotation.z=0.75;Bm.s.rotation.x=-0.45;R.torso.rotation.y=-0.35;if(p==='dq_sgfire'){A.s.rotation.z+=0.45;Bm.s.rotation.z+=0.35;R.torso.rotation.z=0.2;}}
+  if(R.fist){try{R.fist(1);}catch(_){}}
+  // wrists level the guns so barrels point at the target, not the sky
+  [A,Bm].forEach(x=>{if(x.h)x.h.rotation.z=-(x.s.rotation.z+x.e.rotation.z)+(p==='dq_swap'?0.4:0);});}catch(_){}return r;};
+SK.d_quick&&(SK.d_quick.d='Two revolver shots, ten-shot fan fire, then a shotgun blast');
+}catch(e){console.warn('v24',e);}})();
 
 </script>
 <script>if("serviceWorker" in navigator&&location.protocol!=="file:")addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script></body></html>
