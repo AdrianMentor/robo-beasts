@@ -786,31 +786,87 @@ function humanBolt(){const GM=0xeef0f4,DK=0x2a3038,CU=0xd8282c,BL=0x2a56c8,YL=0x
   R._st=(R._st||0)+dt;const low=typeof GQ!=='undefined'&&GQ===2;if(R.root.visible&&R._st>(low?0.7:0.28)){R._st=0;try{const p=R.vent.getWorldPosition(new V3());const fw=new V3(1,0,0).applyQuaternion(R.root.quaternion);p.addScaledVector(fw,0.05);smokePuff(p,low?0.1:0.12,low?0.8:1.1,0xe8eef4);}catch(_){}}};
  return finish(R);}
 BUILD.human.push(humanBolt);
-function humanKing(){const SK_=0x8e5a38,BK=0x16161a,RD=0xb0161c,GD=0xe8b830,HR=0x0c0c0e;
- const m={skin:TM(SK_),top:TM(BK),sleeve:TM(SK_),arm:TM(SK_),bottom:TM(BK),hand:TM(SK_),foot:TM(0x1a1214)};
- const R=rigHum({...HUMB,tw:0.215,sw:0.31,ar:0.079,au:0.21,al:0.19,legR:0.09,m});eyes(R,0x5a2a12,0.9);R.hairDone=1;const H=R.head,hr=HUMB.hr;R.king=1;
- // tall black mohawk on a shaved head (sides bare), braid hanging at the back
- R.root.updateMatrixWorld(true);const hb_=new T.Box3().setFromObject(H);const hw=H.getWorldPosition(new V3());const hc=hb_.getCenter(new V3()).sub(hw),hs=hb_.getSize(new V3());const ax=hs.x/2,ay=hs.y/2;
- // mohawk strip follows the top of the (stylised, oversized) head; sides stay shaved
- for(let i=0;i<11;i++){const u=i/10;const xn=0.75-u*1.6;const x=hc.x+xn*ax;const y=hc.y+Math.sqrt(Math.max(0,1-xn*xn))*ay*0.98;const ht=0.16+0.16*Math.sin(Math.min(1,u*1.1)*PI)+0.03*(1-u);
-  const b=part(box(0.085,ht,0.075),TM(HR),x,y+ht*0.35,0,H,false);b.rotation.z=-xn*0.9;}
- R.braid=[];let par=grp(H,hc.x-ax*0.97,hc.y-ay*0.1,0);for(let i=0;i<7;i++){const s=part(sph(0.034-i*0.002,8,6),TM(HR),0,-0.05,0,par,false);s.scale.set(1,1.25,1);const n=grp(par,0,-0.055,0);R.braid.push(par);par=n;}
- part(cyl(0.022,0.022,0.03,8),TM(GD),0,0.01,0,par,false);
- // gold ear studs + subtle brow
- [-1,1].forEach(sd=>{part(sph(0.02,6,5),TM(GD),hc.x,hc.y-ay*0.15,sd*hs.z*0.5,H,false);});
- // royal outfit: black sleeveless top, red sash + gold trims, gold crown emblem on chest
- const T_=R.torso,th=HUMB.th;
- part(box(0.03,th*0.9,0.05),TM(RD),HUMB.tw*0.98,th*0.55,0,T_,false);
- [-1,1].forEach(sd=>{const tr=part(box(0.025,th*0.95,0.025),TM(GD),HUMB.tw*0.95,th*0.55,sd*0.1,T_,false);tr.rotation.x=sd*0.25;});
- const em=grp(T_,HUMB.tw*1.04,th*0.72,0);part(box(0.012,0.04,0.12),TM(GD),0,0,0,em,false);[-1,0,1].forEach(k=>{const c=part(cone(0.018,0.05,4),TM(GD),0,0.04,k*0.045,em,false);});part(sph(0.012,6,5),GLOW(0xff2020,0.9),0.008,0.0,0,em,false);
- const sash=part(tor(0.215,0.035),TM(RD),0,0.01,0,R.hips,false);sash.rotation.x=PI/2;sash.scale.set(1,1.18,1);
- part(box(0.05,0.06,0.07),TM(GD),0.23,0.01,0,R.hips,false);
- [-1,1].forEach(sd=>{const tl=part(box(0.03,0.2,0.06),TM(RD),0.12,-0.12,sd*0.15,R.hips,false);tl.rotation.z=0.12;});
- // gold arm bands (upper arms), red-black wraps on wrists, gold ankle bands
- [R.aR,R.aL].forEach(A=>{const b=part(cyl(0.088,0.088,0.035,14),TM(GD),0,-0.07,0,A.s,false);const w=part(cyl(0.07,0.07,0.06,12),TM(RD),0,-HUMB.al*0.85,0,A.e,false);});
- [R.lR,R.lL].forEach(L=>{const b=part(cyl(0.095,0.095,0.03,12),TM(GD),0,-HUMB.legL*0.9,0,L.k,false);});
- // muscle groups for King's Power
- R.mus=[[R.aR.s,1.28],[R.aL.s,1.28],[R.lR.h,1.15],[R.lL.h,1.15]];R.tor0=T_.scale.clone();
+function humanKing(){// v29 redesign: ~8-heads-tall heroic powerhouse, V-taper, chiselled face
+ const SK_=0xc89062,SKD=0xa0704a,BK=0x141418,RD=0xb3141c,RDD=0x6a0a0e,GD=0xe8b830,HR=0x0b0b0d;
+ const skin=TM(SK_),skinD=TM(SKD),blk=TM(BK),red=TM(RD),redD=TM(RDD),gold=TM(GD,0x3a2800),hair=TM(HR);
+ const m={skin,top:blk,sleeve:skin,arm:skin,bottom:blk,hand:skin,foot:blk};
+ const P={...HUMB,hr:0.16,th:0.6,tw:0.2,sw:0.37,ar:0.075,au:0.34,al:0.3,hand:0.1,legR:0.075,legU:0.5,legL:0.46,foot:[0.3,0.1,0.13],m};
+ const R=rigHum(P);R.hairDone=1;R.king=1;R._det=1;
+ // hide the default round rig meshes (keep the jointed hands)
+ const HID=new T.MeshBasicMaterial({visible:false});
+ const hide=o=>{o.material=HID;o.children.forEach(c=>{if(c.isMesh&&c.material===OL)c.material=HID;});};
+ [R.hips,R.torso,R.aR.s,R.aR.e,R.aL.s,R.aL.e,R.lR.h,R.lR.k,R.lR.f,R.lL.h,R.lL.k,R.lL.f].forEach(g=>g.children.filter(c=>c.isMesh).forEach(hide));hide(R.head);
+ const lathe=(pr,seg)=>new T.LatheGeometry(pr.slice().reverse().map(([r,y])=>new T.Vector2(r,y)),seg||12);
+ const mg=(par,x,y,z)=>grp(par,x||0,y||0,z||0);
+ const T_=R.torso;R.mus=[];
+ // ---- torso: V-taper ribcage, pecs, abs, obliques, traps ----
+ const rib=part(new T.CylinderGeometry(0.37,0.19,0.52,12,1),skin,0,0.39,0,T_);rib.scale.set(0.6,1,1);
+ const abd=part(new T.CylinderGeometry(0.19,0.185,0.2,12,1),skin,0,0.06,0,T_);abd.scale.set(0.64,1,1);
+ const pecG=mg(T_,0,0,0);R.mus.push([pecG,1.18]);
+ [-1,1].forEach(sd=>{const pc=part(new T.IcosahedronGeometry(1,1),skin,0.15,0.5,sd*0.105,pecG);pc.scale.set(0.06,0.095,0.12);pc.rotation.y=-sd*0.3;pc.rotation.z=-0.15;
+  const ln=part(new T.BoxGeometry(0.02,0.012,0.17),skinD,0.205,0.42,sd*0.11,pecG,false);ln.rotation.y=-sd*0.32;
+  for(let r=0;r<3;r++){{const ab=part(new T.IcosahedronGeometry(1,1),skin,0.112-r*0.004,0.31-r*0.072,sd*0.042,T_,false);ab.scale.set(0.02,0.032,0.038);}}
+  const ob=part(new T.BoxGeometry(0.05,0.2,0.04),skinD,0.06,0.2,sd*0.17,T_,false);ob.rotation.x=sd*0.2;});
+ part(new T.BoxGeometry(0.012,0.24,0.012),skinD,0.122,0.24,0,T_,false);
+ const trG=mg(T_,0,0,0);R.mus.push([trG,1.22]);
+ [-1,1].forEach(sd=>{const tp=part(new T.BoxGeometry(0.14,0.09,0.26),skin,-0.01,0.65,sd*0.15,trG);tp.rotation.x=sd*0.42;});
+ // neck
+ part(new T.CylinderGeometry(0.08,0.1,0.18,10),skin,0,0.71,0,T_);
+ // ---- open red vest (sleeveless, chest/abs exposed) with gold trim + gold collar ----
+ const vest=part(new T.CylinderGeometry(0.385,0.205,0.5,18,1,true,PI/2+0.75,PI*2-1.5),red,0,0.41,0,T_,false);vest.scale.set(0.64,1,1);vest.material.side=T.DoubleSide;
+ [-1,1].forEach(sd=>{const a=PI/2+sd*0.75;const tr=part(new T.BoxGeometry(0.02,0.5,0.025),gold,Math.sin(a)*0.3*0.64,0.41,Math.cos(a)*0.3,T_,false);tr.rotation.x=-sd*0.22;});
+ const col=part(new T.TorusGeometry(0.1,0.018,6,16),gold,-0.01,0.69,0,T_,false);col.rotation.x=PI/2;col.scale.set(0.9,1.3,1);
+ // ---- hips: black gi pants, red sash, gold belt with crown buckle + sash tails ----
+ const pel=part(new T.CylinderGeometry(0.2,0.19,0.2,12),blk,0,-0.04,0,R.hips);pel.scale.set(0.68,1,1);
+ const sash=part(new T.CylinderGeometry(0.2,0.198,0.07,14,1,true),red,0,0.045,0,R.hips,false);sash.scale.set(0.7,1,1);sash.material.side=T.DoubleSide;
+ const belt=part(new T.CylinderGeometry(0.203,0.203,0.022,14,1,true),gold,0,0.015,0,R.hips,false);belt.scale.set(0.71,1,1);belt.material.side=T.DoubleSide;
+ const em=mg(R.hips,0.143,0.04,0);part(new T.BoxGeometry(0.02,0.07,0.1),gold,0,0,0,em,false);[-1,0,1].forEach(k=>part(cone(0.014,0.045,4),gold,0.004,0.05,k*0.034,em,false));part(sph(0.011,6,5),GLOW(0xff2020,0.9),0.014,0.005,0,em,false);
+ [-1,1].forEach(sd=>{const tl=part(new T.BoxGeometry(0.02,0.3,0.06),red,0.05,-0.12,sd*0.13,R.hips,false);tl.rotation.z=0.08;tl.rotation.x=sd*0.06;part(new T.BoxGeometry(0.022,0.02,0.062),gold,0.05,-0.27,sd*0.13,R.hips,false);});
+ // ---- arms: deltoids, biceps/triceps, forearms, gold bands, hand wraps ----
+ [R.aR,R.aL].forEach(A=>{
+  const dG=mg(A.s,0,0,0);R.mus.push([dG,1.3]);const dl=part(new T.IcosahedronGeometry(0.13,1),skin,0,0.0,0,dG);dl.scale.set(0.95,0.85,1.0);
+  const bG=mg(A.s,0,0,0);R.mus.push([bG,1.32]);
+  const ua=part(lathe([[0.0,0.0],[0.1,-0.02],[0.108,-0.1],[0.114,-0.19],[0.096,-0.29],[0.078,-0.37],[0.0,-0.4]],12),skin,0,-0.02,0,bG);ua.scale.set(1.0,1,0.92);
+  const bi=part(new T.SphereGeometry(1,10,8),skin,0.05,-0.17,0,bG);bi.scale.set(0.068,0.12,0.072);
+  const tri=part(new T.SphereGeometry(1,8,6),skinD,-0.055,-0.15,0,bG,false);tri.scale.set(0.055,0.13,0.065);
+  const band=part(new T.CylinderGeometry(0.118,0.118,0.035,14,1,true),gold,0,-0.06,0,bG,false);band.material.side=T.DoubleSide;
+  part(new T.CylinderGeometry(0.119,0.119,0.008,14,1,true),red,0,-0.04,0,bG,false).material.side=T.DoubleSide;
+  const fG=mg(A.e,0,0,0);R.mus.push([fG,1.22]);
+  part(lathe([[0.0,0.03],[0.082,0.01],[0.094,-0.06],[0.082,-0.15],[0.063,-0.24],[0.052,-0.3],[0.0,-0.31]],12),skin,0,0,0,fG);
+  // fighting wraps: wrist + across the palm (fingers free)
+  part(new T.CylinderGeometry(0.058,0.056,0.09,10),red,0,-0.27,0,fG,false);part(new T.CylinderGeometry(0.059,0.059,0.012,10),blk,0,-0.24,0,fG,false);
+  const k=P.hand;const wr=part(new T.BoxGeometry(k*0.62,k*0.42,k*0.92),red,k*0.06,-k*0.5,0,A.h,false);});
+ // ---- legs: quads, calves, wraps, boots ----
+ [R.lR,R.lL].forEach(L=>{const tG=mg(L.h,0,0,0);R.mus.push([tG,1.14]);
+  part(lathe([[0.0,0.03],[0.148,0.0],[0.158,-0.12],[0.145,-0.28],[0.116,-0.45],[0.09,-0.6],[0.0,-0.63]],12),blk,0,0,0,tG);
+  const cG=mg(L.k,0,0,0);R.mus.push([cG,1.12]);
+  part(lathe([[0.0,0.03],[0.09,0.0],[0.106,-0.12],[0.092,-0.28],[0.068,-0.45],[0.058,-0.56],[0.0,-0.58]],12),blk,0,0,0,cG);
+  part(new T.CylinderGeometry(0.066,0.068,0.13,10),red,0,-0.47,0,L.k,false);part(new T.CylinderGeometry(0.07,0.07,0.02,10),gold,0,-0.54,0,L.k,false);
+  const bt=part(new T.BoxGeometry(0.27,0.09,0.13),blk,0.05,-0.075,0,L.f);const tc=part(new T.BoxGeometry(0.06,0.06,0.1),blk,0.16,-0.085,0,L.f,false);tc.rotation.z=-0.4;});
+ // ---- head: chiselled skull + square jaw, fierce brows, mohawk blade, braid ----
+ const H=mg(R.neck,0,P.hr*0.85,0);R.head=H;
+ const sk=part(new T.SphereGeometry(1,16,12),skin,-0.012,0.03,0,H);sk.scale.set(0.155,0.165,0.13);
+ const shave=part(new T.SphereGeometry(1,16,10,0,PI*2,0,1.15),TM(0x8a6a58),-0.016,0.034,0,H,false);shave.scale.set(0.158,0.168,0.134);
+ const jaw=part(new T.CylinderGeometry(0.115,0.075,0.13,6,1),skin,0.035,-0.07,0,H);jaw.scale.set(0.95,1,1.0);jaw.rotation.y=PI/6;
+ part(new T.BoxGeometry(0.06,0.045,0.07),skin,0.1,-0.125,0,H);// chin
+ [-1,1].forEach(sd=>{const cb=part(new T.BoxGeometry(0.035,0.025,0.045),skin,0.112,0.0,sd*0.068,H,false);cb.rotation.y=sd*0.5;
+  // eyes: narrow almond whites, dark iris, fierce angled brows
+  const w=part(new T.SphereGeometry(1,10,8),TM(0xf4f0ea),0.133,0.045,sd*0.052,H,false);w.scale.set(0.012,0.017,0.034);
+  const ir=part(new T.SphereGeometry(1,8,6),GLOW(0x3a1a08,0.9),0.142,0.045,sd*0.05,H,false);ir.scale.set(0.007,0.015,0.015);
+  const lid=part(new T.BoxGeometry(0.02,0.01,0.065),TM(0x2a1a14),0.14,0.06,sd*0.052,H,false);lid.rotation.x=-sd*0.3;
+  const br=part(new T.BoxGeometry(0.04,0.028,0.085),hair,0.14,0.083,sd*0.05,H,false);br.rotation.x=-sd*0.42;br.rotation.z=-0.2;
+  const ear=part(new T.SphereGeometry(1,8,6),skin,-0.01,0.02,sd*0.132,H);ear.scale.set(0.028,0.042,0.014);
+  part(sph(0.012,6,5),gold,-0.008,-0.02,sd*0.142,H,false);});
+ const nose=part(cone(0.024,0.07,4),skin,0.148,0.0,0,H,false);nose.rotation.z=-PI/2-0.25;nose.rotation.x=PI/4;nose.scale.set(1,1,0.8);
+ part(new T.BoxGeometry(0.012,0.008,0.05),TM(0x5a2a20),0.142,-0.068,0,H,false);
+ // mohawk: tall sharp blade of spikes front -> back
+ for(let i=0;i<11;i++){const u=i/10;const a=1.12+u*1.8;const x=-0.012+Math.cos(a)*0.155*0.98,y=0.03+Math.sin(a)*0.165*0.98;const ht=0.13+0.12*Math.sin(Math.min(1,u*1.2)*PI*0.9)+0.04*(1-u);
+  const sp=part(cone(0.03,ht,4),hair,x,y,0,H,false);sp.scale.set(1.25,1,0.5);sp.rotation.z=a-PI/2+0.32;sp.position.add(new V3(Math.cos(a),Math.sin(a),0).multiplyScalar(ht*0.42));}
+ // braid hanging at the back (sways)
+ R.braid=[];let par=mg(H,-0.15,-0.01,0);for(let i=0;i<8;i++){const s=part(new T.IcosahedronGeometry(0.026-i*0.0015,0),hair,0,-0.04,0,par,false);s.scale.set(0.9,1.35,0.9);s.rotation.y=i%2?0.6:-0.6;const n=mg(par,0,-0.05,0);R.braid.push(par);par=n;}
+ part(new T.CylinderGeometry(0.02,0.02,0.025,8),gold,0,0.005,0,par,false);part(cone(0.018,0.05,5),hair,0,-0.03,0,par,false).rotation.z=PI;
+ R.tor0=T_.scale.clone();
+ const f0=R.fist;R.fist=v=>f0(R._open?v:Math.max(v,0.95));
  return finish(R);}
 BUILD.human.push(humanKing);
 
@@ -5478,8 +5534,8 @@ const _au=animUnit;animUnit=function(u,dt){const r=_au.apply(this,arguments);try
 }catch(_){}return r;};
 const _vic=victory;victory=function(){try{B&&B.en&&B.en.forEach(clearHole);}catch(_){}return _vic.apply(this,arguments);};
 // ---- poses ----
-const _rh=resetHum;resetHum=function(R,st_){const r=_rh.apply(this,arguments);try{if(!R.king)return r;const A=R.aR,Bm=R.aL,LR=R.lR,LL=R.lL,p=R._pose;const fist=v=>{try{R.fist&&R.fist(v);}catch(_){}};
- const guard=()=>{A.s.rotation.z=0.95;A.e.rotation.z=2.05;A.s.rotation.x=-0.25;Bm.s.rotation.z=1.25;Bm.e.rotation.z=1.75;Bm.s.rotation.x=0.3;LR.h.rotation.z=0.42;LR.k.rotation.z=-0.5;LL.h.rotation.z=-0.38;LL.k.rotation.z=-0.42;R.hips.position.y-=0.05;R.torso.rotation.y=-0.25;R.torso.rotation.z=-0.06;if(R.neck)R.neck.rotation.y=0.2;fist(1);};
+const _rh=resetHum;resetHum=function(R,st_){const r=_rh.apply(this,arguments);try{if(!R.king)return r;const A=R.aR,Bm=R.aL,LR=R.lR,LL=R.lL,p=R._pose;const fist=v=>{try{R._fv=null;R.fist&&R.fist(v);}catch(_){}};R._open=/grab|lift|suplex|palm|raise|throw/.test(p||'')?1:0;
+ const guard=()=>{const tall=!!R.o&&R.o.hr<0.2;A.s.rotation.z=tall?0.35:0.95;A.e.rotation.z=tall?1.8:2.05;A.s.rotation.x=tall?-0.12:-0.25;Bm.s.rotation.z=tall?0.55:1.25;Bm.e.rotation.z=tall?1.6:1.75;Bm.s.rotation.x=tall?0.12:0.3;LR.h.rotation.z=0.42;LR.k.rotation.z=-0.5;LL.h.rotation.z=-0.38;LL.k.rotation.z=-0.42;R.hips.position.y-=0.05;R.torso.rotation.y=-0.25;R.torso.rotation.z=-0.06;if(R.neck)R.neck.rotation.y=0.2;fist(1);};
  if(!p){if(R._idle!==false){guard();const tt=clock||0;R.torso.rotation.x=0.03*Math.sin(tt*2.2);A.e.rotation.z+=0.06*Math.sin(tt*2.2);}return r;}
  guard();
  if(p==='kg_jab0'){Bm.s.rotation.z=1.0;Bm.e.rotation.z=2.2;}
